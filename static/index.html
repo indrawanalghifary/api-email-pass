@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Token Management</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Token Management</h1>
+
+        <div id="auth-section">
+            <h2>Login Admin</h2>
+            <input type="text" id="admin-username" placeholder="Username" value="admin">
+            <input type="password" id="admin-password" placeholder="Password">
+            <button id="login-button">Login</button>
+            <p id="auth-message" class="message"></p>
+        </div>
+
+        <div id="admin-section" style="display: none;">
+            <h2>Generate New Token</h2>
+            <button id="generate-token-button">Generate Token</button>
+            <p id="generate-token-message" class="message"></p>
+            <div id="new-token-display" style="display: none;">
+                <strong>New Token:</strong> <span id="generated-token-value"></span>
+                <button class="copy-button" data-target="generated-token-value">Copy</button>
+            </div>
+
+            <h2>Existing Tokens</h2>
+            <table id="tokens-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Token</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Tokens will be loaded here -->
+                </tbody>
+            </table>
+            <p id="tokens-message" class="message"></p>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
