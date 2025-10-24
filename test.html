@@ -1,0 +1,3040 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SMART CONTEN GENERATOR V 6.6 FINAL</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:  '#f5f6ff',
+              100: '#eaebff',
+              200: '#d6d8ff',
+              300: '#b3b6ff',
+              400: '#8a8eff',
+              500: '#6366f1', /* indigo-500 */
+              600: '#4f46e5', /* indigo-600 */
+              700: '#4338ca', /* indigo-700 */
+              800: '#3730a3', /* indigo-800 */
+              900: '#312e81'
+            }
+          },
+          boxShadow: {
+            soft: '0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px rgb(0 0 0 / 0.06)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+
+  <script>
+    // apply saved theme on load
+    (function(){
+      const saved = localStorage.getItem('theme'); 
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if ((saved === 'dark') || (!saved && prefersDark)) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
+  <style>
+
+    :root{
+      --bg: #fafbff;           /* light background */
+      --text: #111827;
+      --subtext: #6b7280;
+      --card-bg: #ffffff;
+      --card-border: #dbeafe;  /* blue-100 */
+      --ring: #4f46e5;
+      --accent-blue: #bfdbfe;  /* blue-200 (biru muda) */
+      --soft-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
+    }
+    .dark{
+      --bg: #0b1020;           /* dark deep blue-ish */
+      --text: #e5e7eb;
+      --subtext: #9ca3af;
+      --card-bg: #0f172a;      /* slate-900 */
+      --card-border: #1e40af33;/* biru muda transparan */
+      --ring: #93c5fd;         /* blue-300 */
+      --accent-blue: #93c5fd;  /* blue-300 */
+      --soft-shadow: 0 1px 2px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.25);
+    }
+
+    body{ background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; }
+    .subtext{ color: var(--subtext); }
+
+    /* kartu & kontainer umum */
+    .card{
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      box-shadow: var(--soft-shadow);
+    }
+
+    /* uploader */
+    .file-input-label{
+      display:flex;align-items:center;justify-content:center;flex-direction:column;
+      padding:1rem;border-radius:.75rem;cursor:pointer;transition:all .2s ease;height:100%;
+      background: color-mix(in oklab, var(--card-bg) 92%, white);
+      border: 1.5px dashed var(--accent-blue);
+    }
+    .file-input-label:hover{
+      background: color-mix(in oklab, var(--card-bg) 88%, white);
+      border-color: color-mix(in oklab, var(--accent-blue) 70%, #60a5fa);
+    }
+    .file-input-label.dragover{
+      border-color:#60a5fa;
+      background: color-mix(in oklab, var(--card-bg) 80%, #eff6ff);
+    }
+
+    /* tab */
+    .tab-button{ transition: all .2s ease; }
+    .tab-button.active{
+      background: color-mix(in oklab, var(--card-bg) 80%, #e0e7ff);
+      color: var(--text);
+      border-bottom: 2px solid var(--accent-blue);
+    }
+    .tab-content{ display:none }
+    .tab-content.active{ display:block; animation:fadeIn .3s ease }
+    @keyframes fadeIn{ from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:translateY(0)} }
+
+    /* loader ring tetap */
+    .loader{ border:3px solid #e5e7eb; border-top:3px solid #4f46e5; border-radius:50%; width:36px; height:36px; animation:spin 1s linear infinite }
+    .dark .loader{ border-color:#1f2937; border-top-color:#93c5fd }
+    @keyframes spin{ to{transform:rotate(360deg)} }
+
+    /* area output / panel */
+    .panel{
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: .75rem;
+    }
+
+    /* tombol primer/sekunder */
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+      padding:.65rem .9rem; border-radius:.7rem; font-weight:600; transition:opacity .15s ease, background .2s ease, border-color .2s ease
+    }
+    .btn-primary{ background:#4f46e5; color:#fff; }
+    .btn-primary:hover{ background:#4338ca }
+    .dark .btn-primary{ background:#2563eb }
+    .dark .btn-primary:hover{ background:#1d4ed8 }
+
+    .btn-ink{ background:#0f172a; color:#fff; }
+    .btn-ink:hover{ opacity:.95 }
+    .dark .btn-ink{ background:#111827 }
+
+    .btn-outline{
+      border:1px solid var(--accent-blue); color: var(--text); background: transparent;
+    }
+    .btn-outline:hover{ background: color-mix(in oklab, var(--card-bg) 80%, #eff6ff) }
+
+    /* switch */
+    .toggle-switch input{
+      appearance:none; width:44px; height:24px; background:#d1d5db; border-radius:999px; position:relative; outline:none; transition:.2s;
+    }
+    .toggle-switch input:before{
+      content:""; position:absolute; top:2px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%;
+      box-shadow:0 1px 2px rgba(0,0,0,.2); transition: transform .2s;
+    }
+    .toggle-switch input:checked{ background:#60a5fa }
+    .toggle-switch input:checked:before{ transform: translateX(20px) }
+    
+    /* scrollbars halus */
+    .scrollable-row{ scroll-snap-type: x mandatory; }
+    .scrollable-row > *{ scroll-snap-align: start; }
+    .scrollable-row::-webkit-scrollbar{ height:8px }
+    .scrollable-row::-webkit-scrollbar-thumb{ background: var(--accent-blue); border-radius:10px }
+    
+    /* Modal */
+    .modal{ position:fixed; inset:0; background: rgba(0,0,0,.65); display:none; justify-content:center; align-items:center; z-index:1000; padding:1rem; }
+    .modal-content{ max-width: 96vw; max-height: 90vh; overflow-y: auto; }
+
+    /* Mobile tweaks */
+    @media (max-width: 640px){
+      .container-pad { padding-left: 1rem; padding-right: 1rem; }
+    }
+
+    /* Styles for Tab 4 */
+    #tab4 ::-webkit-scrollbar { width: 8px; }
+    #tab4 ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+    #tab4 ::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+    #tab4 ::-webkit-scrollbar-thumb:hover { background: #555; }
+    .dark #tab4 ::-webkit-scrollbar-track { background: #2d3748; }
+    .dark #tab4 ::-webkit-scrollbar-thumb { background: #4a5568; }
+    .dark #tab4 ::-webkit-scrollbar-thumb:hover { background: #718096; }
+    #tab4 .upload-box { border: 2px dashed #d1d5db; }
+    .dark #tab4 .upload-box { border-color: #4a5568; }
+    .loader-t4 {
+        border: 4px solid #f3f3f3; /* Light grey */
+        border-top: 4px solid #3b82f6; /* Blue */
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+    }
+    .dark .loader-t4 {
+        border: 4px solid #4a5568;
+        border-top: 4px solid #60a5fa;
+    }
+    .btn-gemini {
+        background-image: linear-gradient(to right, #4f46e5, #818cf8);
+        color: white;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        border: none;
+    }
+    .btn-gemini:hover {
+        box-shadow: 0 0 15px rgba(129, 140, 248, 0.6);
+        transform: translateY(-2px);
+    }
+
+    /* Styles for Tab 5 */
+    #tab5 {
+        background-color: #0f172a; /* bg-slate-900 */
+        color: #e2e8f0; /* text-slate-200 */
+    }
+    #tab5 ::-webkit-scrollbar { width: 8px; }
+    #tab5 ::-webkit-scrollbar-track { background: #1e293b; }
+    #tab5 ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+    #tab5 ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+    /* Styles for Login Modal */
+    #loginOverlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.75);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 1001; backdrop-filter: blur(4px);
+    }
+    #loginModal {
+      background: var(--card-bg); color: var(--text);
+      padding: 2rem; border-radius: 1rem; width: 90%; max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+      border: 1px solid var(--card-border);
+      text-align: center;
+    }
+    #loginModal h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; }
+    #tokenInput {
+      width: 100%; padding: .8rem; margin-bottom: 1rem;
+      border: 1px solid var(--card-border); background: var(--bg);
+      border-radius: .5rem; color: var(--text);
+      box-sizing: border-box; /* Fix width issue */
+      outline: none;
+    }
+    #tokenInput:focus { border-color: var(--ring); box-shadow: 0 0 0 2px color-mix(in oklab, var(--ring) 30%, transparent); }
+    #loginBtn {
+      width: 100%; padding: .8rem; background: #4f46e5; color: white;
+      border: none; border-radius: .5rem; font-weight: 600; cursor: pointer;
+      transition: background .2s;
+    }
+    #loginBtn:hover { background: #4338ca; }
+    #loginBtn:disabled { background: #a5b4fc; cursor: not-allowed; }
+    #loginError {
+      color: #ef4444; font-size: .875rem; margin-top: 1rem; display: none;
+    }
+    .dark #loginBtn { background: #2563eb; }
+    .dark #loginBtn:hover { background: #1d4ed8; }
+    .dark #loginBtn:disabled { background: #60a5fa; }
+    .dark #loginError { color: #f87171; }
+
+  </style>
+</head>
+<body class="antialiased">
+  <div class="max-w-7xl mx-auto container-pad px-4 sm:px-6 lg:px-8">
+    <header class="pt-6 pb-4 sm:pt-10 sm:pb-6 text-center">
+      <h1 class="text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-[var(--text)]">
+        Conten Affiliate Generator <span class="text-brand-600 dark:text-blue-400">v6.6 FINAL</span>
+      </h1>
+      <p class="mt-2 text-sm sm:text-base subtext">Tools canggih membuat konten lebih professional dengan sekali KLIK!</p>
+      <div class="flex justify-center gap-3 mt-4">
+        <button id="theme-toggle" class="btn btn-outline" type="button" aria-label="Toggle theme">
+          <span id="theme-label">Switch ke Dark</span>
+        </button>
+        <p id="welcomeText" class="text-green-600 dark:text-green-400 font-medium hidden">Token valid</p> <!-- Hidden by default -->
+      </div>
+    </header>
+
+    <div class="mb-5 sm:mb-6 sticky top-0 z-20 bg-[var(--bg)]/80 backdrop-blur supports-[backdrop-filter]:backdrop-blur rounded-xl card">
+      <nav class="flex overflow-x-auto scrollable-row" aria-label="Tabs">
+        <button class="tab-button active flex-shrink-0 whitespace-nowrap py-3 sm:py-3.5 px-3 text-sm sm:text-base font-medium subtext hover:text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                data-tab="tab3">Generator Konten</button>
+        <button class="tab-button flex-shrink-0 whitespace-nowrap py-3 sm:py-3.5 px-3 text-sm sm:text-base font-medium subtext hover:text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                data-tab="tab4">TikTok Scraper</button>
+        <button class="tab-button flex-shrink-0 whitespace-nowrap py-3 sm:py-3.5 px-3 text-sm sm:text-base font-medium subtext hover:text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                data-tab="tab5">AI Motion Director</button>
+        <button class="tab-button flex-shrink-0 whitespace-nowrap py-3 sm:py-3.5 px-3 text-sm sm:text-base font-medium subtext hover:text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                data-tab="tab2">Analisis Pose</button>
+        <button class="tab-button flex-shrink-0 whitespace-nowrap py-3 sm:py-3.5 px-3 text-sm sm:text-base font-medium subtext hover:text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                data-tab="tab1">Analisis Latar</button>
+        <!-- REMOVED TAB 6 FOR NOW -->
+        <!-- <button class="tab-button flex-shrink-0 whitespace-nowrap py-3 sm:py-3.5 px-3 text-sm sm:text-base font-medium subtext hover:text-[var(--text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                data-tab="tab6">AI Naming Assistant</button> -->
+      </nav>
+      </div>
+
+    <main class="space-y-6 sm:space-y-8">
+      <section id="tab3" class="tab-content active">
+        <!-- ... Konten Tab 3 (Generator Konten) ... -->
+        <div class="card p-0 overflow-hidden">
+          <div class="bg-gradient-to-b from-blue-50 to-white dark:from-slate-800 dark:to-slate-900 border-b border-[var(--card-border)] px-5 sm:px-7 py-5">
+            <h2 class="text-xl sm:text-2xl font-semibold text-[var(--text)] text-center">Tools generator conten</h2>
+            <p class="text-center subtext text-sm mt-1.5">Pastikan foto produk yang diupload detail</p>
+          </div>
+
+          <div class="px-5 sm:px-7 py-6">
+            <div id="message-container-t3" class="mb-4"></div>
+            
+            <div class="flex flex-col gap-8">
+              <div class="w-full flex flex-col gap-4">
+                <section class="card p-4 sm:p-5">
+                  <p class="text-[var(--text)] font-medium mb-2">1) Upload Foto Produk</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label class="block text-gray-500 text-xs mb-1">Depan (opsional)</label>
+                      <input type="file" id="product-image-front-t3" accept="image/*"
+                             class="w-full text-gray-700 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-brand-600 file:text-white hover:file:bg-brand-700 cursor-pointer dark:file:bg-blue-600 dark:hover:file:bg-blue-500">
+                      <div id="product-preview-front-t3" class="relative mt-2 flex justify-center items-center h-36 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700/50 rounded-lg overflow-hidden">
+                        <span class="text-gray-400 dark:text-gray-500 text-xs">Pratinjau Depan</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-gray-500 text-xs mb-1">Samping (opsional)</label>
+                      <input type="file" id="product-image-side-t3" accept="image/*"
+                             class="w-full text-gray-700 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-brand-600 file:text-white hover:file:bg-brand-700 cursor-pointer dark:file:bg-blue-600 dark:hover:file:bg-blue-500">
+                      <div id="product-preview-side-t3" class="relative mt-2 flex justify-center items-center h-36 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700/50 rounded-lg overflow-hidden">
+                        <span class="text-gray-400 dark:text-gray-500 text-xs">Pratinjau Samping</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-gray-500 text-xs mb-1">Belakang (opsional)</label>
+                      <input type="file" id="product-image-back-t3" accept="image/*"
+                             class="w-full text-gray-700 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-brand-600 file:text-white hover:file:bg-brand-700 cursor-pointer dark:file:bg-blue-600 dark:hover:file:bg-blue-500">
+                      <div id="product-preview-back-t3" class="relative mt-2 flex justify-center items-center h-36 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700/50 rounded-lg overflow-hidden">
+                        <span class="text-gray-400 dark:text-gray-500 text-xs">Pratinjau Belakang</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-gray-500 text-xs mb-1">Atas (opsional)</label>
+                      <input type="file" id="product-image-top-t3" accept="image/*"
+                             class="w-full text-gray-700 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-brand-600 file:text-white hover:file:bg-brand-700 cursor-pointer dark:file:bg-blue-600 dark:hover:file:bg-blue-500">
+                      <div id="product-preview-top-t3" class="relative mt-2 flex justify-center items-center h-36 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700/50 rounded-lg overflow-hidden">
+                        <span class="text-gray-400 dark:text-gray-500 text-xs">Pratinjau Atas</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-gray-500 text-xs mb-1">Bawah (opsional)</label>
+                      <input type="file" id="product-image-bottom-t3" accept="image/*"
+                             class="w-full text-gray-700 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-brand-600 file:text-white hover:file:bg-brand-700 cursor-pointer dark:file:bg-blue-600 dark:hover:file:bg-blue-500">
+                      <div id="product-preview-bottom-t3" class="relative mt-2 flex justify-center items-center h-36 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700/50 rounded-lg overflow-hidden">
+                        <span class="text-gray-400 dark:text-gray-500 text-xs">Pratinjau Bawah</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-gray-500 text-xs mb-1">Detail (opsional)</label>
+                      <input type="file" id="product-image-detail-t3" accept="image/*"
+                             class="w-full text-gray-700 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-brand-600 file:text-white hover:file:bg-brand-700 cursor-pointer dark:file:bg-blue-600 dark:hover:file:bg-blue-500">
+                      <div id="product-preview-detail-t3" class="relative mt-2 flex justify-center items-center h-36 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700/50 rounded-lg overflow-hidden">
+                        <span class="text-gray-400 dark:text-gray-500 text-xs">Pratinjau Detail</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="product-preview-container-t3" class="relative mt-4">
+                    <div id="product-preview-t3" class="mt-2 flex justify-center items-center h-44 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700/50 rounded-lg overflow-hidden">
+                      <span class="text-gray-400 dark:text-gray-500 text-sm">Pratinjau Foto Produk</span>
+                    </div>
+                  </div>
+                </section>
+                <section id="product-info-section-t3" class="card p-4 sm:p-5 hidden">
+                  <p class="text-[var(--text)] font-medium mb-2">Jelaskan Produk & Konsep Foto</p>
+                  <textarea id="product-info-input-t3" rows="4" class="w-full p-3 border border-[var(--card-border)] bg-[var(--bg)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]" placeholder="Contoh: Biskuit cokelat renyah. Konsep foto kafe outdoor, sore hari, santai."></textarea>
+                  <div class="flex flex-col mt-4 gap-4">
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="text-toggle-t3">
+                      <span class="text-[var(--text)] text-sm">Tambahkan tulisan iklan (opsional)</span>
+                    </label>
+                    <div id="logo-upload-section-t3" class="hidden">
+                      <label class="block text-[var(--text)] text-sm mb-2" for="logo-image-t3">Unggah Logo (opsional)</label>
+                      <input type="file" id="logo-image-t3" accept="image/*" class="w-full text-gray-700 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-gray-900 file:text-white hover:opacity-95 cursor-pointer dark:file:bg-slate-700">
+                      <div id="logo-preview-t3" class="mt-3 flex justify-center items-center h-14 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700/50 rounded-lg overflow-hidden">
+                        <span class="text-gray-400 dark:text-gray-500 text-sm">Pratinjau Logo</span>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+                <section class="card p-4 sm:p-5">
+                  <p class="text-[var(--text)] font-medium mb-2">Foto Model (opsional, maks. 2)</p>
+                  <div id="model-inputs-container-t3" class="space-y-4"></div>
+                  <button id="add-model-button-t3" class="w-full mt-2 btn btn-ink">
+                    + Tambah Model
+                  </button>
+                  <div id="model-gender-section-t3" class="mt-4 hidden">
+                    <label class="block text-[var(--text)] text-sm mb-2">Jenis Kelamin Model AI</label>
+                    <select id="model-gender-select-t3" class="w-full p-3 border border-[var(--card-border)] bg-[var(--bg)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]">
+                      <option value="auto" selected>AUTO</option>
+                      <option value="male">PRIA</option>
+                      <option value="female">WANITA</option>
+                    </select>
+                  </div>
+                </section>
+                <section id="description-section-t3" class="card p-4 sm:p-5 hidden">
+                  <p class="text-[var(--text)] font-medium mb-2">Pakaian & Aksesori Model (opsional)</p>
+                  <textarea id="model-style-input-t3" rows="4" class="w-full p-3 border border-[var(--card-border)] bg-[var(--bg)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]" placeholder="Contoh: kemeja flanel, jeans biru, sepatu putih."></textarea>
+                  <div id="pose-description-section-t3" class="hidden mt-4">
+                    <p class="text-[var(--text)] font-medium mb-2">Pose/Interaksi Model (opsional)</p>
+                    <textarea id="pose-description-input-t3" rows="3" class="w-full p-3 border border-[var(--card-border)] bg-[var(--bg)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]" placeholder="Contoh: M1 tersenyum sambil memegang produk, M2 melihat produk dengan ekspresi kagum."></textarea>
+                  </div>
+                </section>
+                <section class="card p-4 sm:p-5">
+                  <p class="text-[var(--text)] font-medium mb-2">2) Pilih Rasio</p>
+                  <select id="ratio-select-t3" class="w-full p-3 border border-[var(--card-border)] bg-[var(--bg)] rounded-lg text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]">
+                    <option value="portrait" selected>POTRAIT (9:16)</option>
+                    <option value="vertical">VERTICAL (4:5)</option>
+                    <option value="square">KOTAK (1:1)</option>
+                    <option value="landscape">LANDSCAPE (16:9)</option>
+                  </select>
+                </section>
+                <button id="generate-button-t3" class="w-full btn btn-primary py-3 rounded-xl disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:text-gray-500">
+                  Generate Konten
+                </button>
+              </div>
+
+              <div id="output-column-t3" class="w-full flex flex-col gap-8">
+                <div>
+                  <h3 class="text-base font-semibold text-[var(--text)]">Hasil Foto 1</h3>
+                  <div id="broll-container-t3" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mt-3"></div>
+                </div>
+                <div>
+                  <h3 class="text-base font-semibold text-[var(--text)]">Hasil Foto 2</h3>
+                  <div id="ugc-container-t3" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mt-3"></div>
+                </div>
+                <div>
+                  <h3 class="text-base font-semibold text-[var(--text)]">Hasil foto 3</h3>
+                  <div id="commercial-container-t3" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mt-3"></div>
+                </div>
+                <div class="flex justify-center mt-4">
+                  <button id="download-all-button-t3" class="btn btn-primary py-3 px-6 rounded-xl text-base disabled:opacity-60 disabled:bg-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span>Unduh Semua Hasil (.zip)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab4" class="tab-content">
+        <!-- ... Konten Tab 4 (TikTok Scraper) ... -->
+        <div class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+            <div class="container mx-auto p-0 md:p-2 max-w-4xl">
+                <header class="text-center mb-8">
+                    <div class="flex justify-center items-center gap-4">
+                        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">TikTok Script Enhancer</h1>
+                        <i class="fa-brands fa-tiktok text-3xl md:text-4xl text-blue-500"></i>
+                    </div>
+                    <p class="mt-2 text-lg text-gray-600 dark:text-gray-400">Ditenagai oleh Gemini AI untuk skrip yang FYP-worthy! V 1.2</p>
+                </header>
+                <div id="input-section-t4" class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg space-y-6">
+                    <div>
+                        <label for="video-upload-t4" class="block text-lg font-semibold mb-3">1. Upload Video Mentahan</label>
+                        <div class="upload-box p-8 text-center rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50" onclick="document.getElementById('video-upload-t4').click()">
+                            <input type="file" id="video-upload-t4" class="hidden" accept="video/mp4,video/quicktime">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-3"></i>
+                            <p class="font-medium">Klik untuk memilih file video</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">MP4, MOV (maks 2 menit)</p>
+                            <p id="file-name-t4" class="text-sm text-green-600 dark:text-green-400 mt-2 font-medium"></p>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-lg font-semibold mb-3">2. Pilih Gaya Video</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/50 has-[:checked]:bg-blue-100 dark:has-[:checked]:bg-blue-900 has-[:checked]:border-blue-500">
+                                <input type="radio" name="video-style-t4" value="Storytelling" class="form-radio h-4 w-4 text-blue-600" checked>
+                                <span class="ml-3 font-medium">Storytelling</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/50 has-[:checked]:bg-blue-100 dark:has-[:checked]:bg-blue-900 has-[:checked]:border-blue-500">
+                                <input type="radio" name="video-style-t4" value="Edukasi" class="form-radio h-4 w-4 text-blue-600">
+                                <span class="ml-3 font-medium">Edukasi</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/50 has-[:checked]:bg-blue-100 dark:has-[:checked]:bg-blue-900 has-[:checked]:border-blue-500">
+                                <input type="radio" name="video-style-t4" value="Humor" class="form-radio h-4 w-4 text-blue-600">
+                                <span class="ml-3 font-medium">Humor</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/50 has-[:checked]:bg-blue-100 dark:has-[:checked]:bg-blue-900 has-[:checked]:border-blue-500">
+                                <input type="radio" name="video-style-t4" value="Review" class="form-radio h-4 w-4 text-blue-600">
+                                <span class="ml-3 font-medium">Review</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/50 has-[:checked]:bg-blue-100 dark:has-[:checked]:bg-blue-900 has-[:checked]:border-blue-500">
+                                <input type="radio" name="video-style-t4" value="Testimoni" class="form-radio h-4 w-4 text-blue-600">
+                                <span class="ml-3 font-medium">Testimoni</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/50 has-[:checked]:bg-blue-100 dark:has-[:checked]:bg-blue-900 has-[:checked]:border-blue-500">
+                                <input type="radio" name="video-style-t4" value="Hard-Selling" class="form-radio h-4 w-4 text-blue-600">
+                                <span class="ml-3 font-medium">Hard-Selling</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-lg font-semibold mb-3">3. Pilih Nada Suara (Tone)</label>
+                        <select id="tone-preference-t4" class="w-full p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                            <option value="Friendly" selected>Friendly (Ramah)</option>
+                            <option value="Energetic">Energetic (Bersemangat)</option>
+                            <option value="Calm">Calm (Tenang)</option>
+                            <option value="Funny">Funny (Lucu)</option>
+                            <option value="Persuasive">Persuasive (Meyakinkan)</option>
+                        </select>
+                    </div>
+                    <button id="generate-btn-t4" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-magic mr-2"></i> Generate Skrip
+                    </button>
+                </div>
+                <div id="loading-section-t4" class="hidden text-center p-8">
+                    <div class="loader-t4 mx-auto"></div>
+                    <p class="mt-4 font-medium text-lg">Gemini sedang menganalisis video Anda...</p>
+                    <p class="text-gray-600 dark:text-gray-400">Mohon tunggu sebentar, kami siapkan skrip terbaik untuk Anda! 🪄</p>
+                </div>
+                <div id="error-section-t4" class="hidden mt-8 bg-red-100 dark:bg-red-900/50 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg relative" role="alert">
+                    <strong class="font-bold">Oops! Terjadi kesalahan.</strong>
+                    <span class="block sm:inline" id="error-message-t4"></span>
+                </div>
+                <div id="output-section-t4" class="hidden mt-8 space-y-6">
+                     <div class="text-center">
+                         <button id="start-over-btn-t4" class="w-full sm:w-auto bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-800 transition-all duration-300">
+                            <i class="fas fa-redo mr-2"></i> Analisis Video Lain
+                        </button>
+                    </div>
+                    <div class="bg-card bg-white dark:bg-gray-800 p-5 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-bold mb-3 flex items-center"><i class="fas fa-scroll mr-3 text-yellow-500"></i> Skrip Baru</h3>
+                        <div id="script-loader-t4" class="hidden text-center p-4">
+                            <div class="loader-t4 mx-auto"></div>
+                            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Membuat variasi skrip baru...</p>
+                        </div>
+                        <p id="new_script-t4" class="text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed"></p>
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            <button class="btn-copy-t4 flex-grow" data-target="new_script-t4"><i class="far fa-copy mr-2"></i> Salin Skrip</button>
+                            <button id="generate-script-btn-t4" class="btn-gemini flex-grow font-bold text-white" style="background-image: linear-gradient(to right, #60a5fa, #93c5fd);"><i class="fas fa-lightbulb mr-2"></i>Generate Skrip Lain</button>
+                        </div>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-card bg-white dark:bg-gray-800 p-5 rounded-xl shadow-lg">
+                            <h3 class="text-xl font-bold mb-3 flex items-center"><i class="fas fa-bolt mr-3 text-orange-500"></i> Hook Awal</h3>
+                            <p id="improved_hook-t4" class="text-gray-700 dark:text-gray-300"></p>
+                            <div class="flex flex-wrap gap-2 mt-4">
+                                <button class="btn-copy-t4 flex-grow" data-target="improved_hook-t4"><i class="far fa-copy mr-2"></i> Salin Hook</button>
+                                <button id="generate-hooks-btn-t4" class="btn-gemini flex-grow">✨ Coba Hook Lain</button>
+                            </div>
+                        </div>
+                        <div class="bg-card bg-white dark:bg-gray-800 p-5 rounded-xl shadow-lg">
+                            <h3 class="text-xl font-bold mb-3 flex items-center"><i class="fas fa-eye mr-3 text-purple-500"></i> Visual Hook Text (Overlay)</h3>
+                            <div id="visual_hook_text_preview-t4" class="p-4 rounded-lg text-center font-bold text-lg mb-4">
+                                <p id="visual_hook_text-t4"></p>
+                            </div>
+                            <button class="btn-copy-t4" data-target="visual_hook_text-t4"><i class="far fa-copy mr-2"></i> Salin Teks</button>
+                        </div>
+                    </div>
+                    <div id="hook-variations-section-t4" class="hidden bg-card bg-white dark:bg-gray-800 p-5 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-bold mb-3 flex items-center"><i class="fas fa-lightbulb mr-3 text-yellow-400"></i> ✨ Variasi Hook Lainnya</h3>
+                        <div id="hook-variations-loader-t4" class="hidden text-center p-4">
+                            <div class="loader-t4 mx-auto"></div>
+                            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Mencari ide hook baru...</p>
+                        </div>
+                        <div id="hook-variations-list-t4" class="space-y-4">
+                            </div>
+                    </div>
+                    <div class="bg-card bg-white dark:bg-gray-800 p-5 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-bold mb-3 flex items-center"><i class="fas fa-pen-nib mr-3 text-green-500"></i> Deskripsi Video</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-600 dark:text-gray-400">Versi Pendek:</h4>
+                                <p id="short_description-t4" class="text-gray-700 dark:text-gray-300"></p>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-600 dark:text-gray-400">Versi Panjang:</h4>
+                                <p id="long_description-t4" class="text-gray-700 dark:text-gray-300"></p>
+                            </div>
+                        </div>
+                        <button class="btn-copy-t4" data-target="short_description-t4,long_description-t4"><i class="far fa-copy mr-2"></i> Salin Deskripsi</button>
+                    </div>
+                    <div class="bg-card bg-white dark:bg-gray-800 p-5 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-bold mb-3 flex items-center"><i class="fas fa-hashtag mr-3 text-blue-500"></i> Rekomendasi Hashtag</h3>
+                        <div id="hashtags-t4" class="flex flex-wrap gap-2"></div>
+                        <button class="btn-copy-t4" data-target="hashtags-t4"><i class="far fa-copy mr-2"></i> Salin Hashtag</button>
+                    </div>
+                    <div class="bg-card bg-white dark:bg-gray-800 p-5 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-bold mb-3 flex items-center"><i class="fas fa-bullseye mr-3 text-red-500"></i> CTA Akhir</h3>
+                        <p id="suggested_cta-t4" class="text-gray-700 dark:text-gray-300"></p>
+                        <button class="btn-copy-t4" data-target="suggested_cta-t4"><i class="far fa-copy mr-2"></i> Salin CTA</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </section>
+      
+      <section id="tab5" class="tab-content">
+        <!-- ... Konten Tab 5 (AI Motion Director) ... -->
+        <div class="w-full max-w-5xl mx-auto p-4 sm:p-6 md:p-8 space-y-6 md:space-y-8">
+            <header class="text-center py-8">
+              <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-white to-slate-400">AI Motion Director</h1>
+              <p class="text-slate-400 mt-2 max-w-2xl mx-auto">Dirancang oleh <span class="font-semibold text-slate-300">@STUDIOFAHMY</span> untuk mengubah dialog menjadi timeline gerakan aktor virtual yang realistis.</p>
+            </header>
+            <div id="form-container-t5" class="space-y-4">
+              <div class="bg-slate-900/60 backdrop-blur border border-slate-700/60 rounded-2xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] transition-all duration-300">
+                <h2 id="accordion-header-1-t5">
+                  <button type="button" data-accordion-trigger-t5 aria-expanded="true" aria-controls="accordion-panel-1-t5" class="w-full flex justify-between items-center p-5 text-left">
+                    <span class="text-lg md:text-xl font-semibold text-white">1. Konteks & Pengaturan Kamera</span>
+                    <svg class="w-6 h-6 text-slate-400 transition-transform duration-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </h2>
+                <div id="accordion-panel-1-t5" data-accordion-panel-t5 data-state="open" class="grid p-5 pt-0 gap-4 sm:gap-5 transition-all duration-300 md:grid">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 col-span-full">
+                        <div>
+                            <label for="sceneFocus-t5" class="block text-sm text-slate-300 mb-1">Fokus Adegan</label>
+                            <select id="sceneFocus-t5" class="w-full bg-slate-800/80 border border-slate-700/60 text-slate-200 rounded-xl px-3 py-3 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:ring-offset-2 focus:ring-offset-slate-900">
+                                <option value="produk">Produk</option>
+                                <option value="wajah">Wajah</option>
+                                <option value="fullbody">Seluruh Tubuh</option>
+                            </select>
+                        </div>
+                         <div>
+                            <label for="emotion-t5" class="block text-sm text-slate-300 mb-1">Emosi Dominan</label>
+                            <select id="emotion-t5" class="w-full bg-slate-800/80 border border-slate-700/60 text-slate-200 rounded-xl px-3 py-3 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:ring-offset-2 focus:ring-offset-slate-900">
+                                <option value="neutral">Netral</option>
+                                <option value="happy">Senang</option>
+                                <option value="sad">Sedih</option>
+                                <option value="angry">Marah</option>
+                                <option value="surprised">Terkejut</option>
+                                <option value="confident">Percaya Diri</option>
+                                <option value="playful">Ceria</option>
+                                <option value="proud">Bangga</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="arahKamera-t5" class="block text-sm text-slate-300 mb-1">Sudut Kamera</label>
+                            <select id="arahKamera-t5" class="w-full bg-slate-800/80 border border-slate-700/60 text-slate-200 rounded-xl px-3 py-3 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:ring-offset-2 focus:ring-offset-slate-900">
+                                <option>Eye level</option><option>Low angle</option><option>High angle</option><option>Over shoulder</option><option>Close-up</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+              </div>
+              <div class="bg-slate-900/60 backdrop-blur border border-slate-700/60 rounded-2xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] transition-all duration-300">
+                <h2 id="accordion-header-2-t5">
+                    <button type="button" data-accordion-trigger-t5 aria-expanded="true" aria-controls="accordion-panel-2-t5" class="w-full flex justify-between items-center p-5 text-left">
+                        <span class="text-lg md:text-xl font-semibold text-white">2. Detail Karakter</span>
+                        <svg class="w-6 h-6 text-slate-400 transition-transform duration-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                </h2>
+                <div id="accordion-panel-2-t5" data-accordion-panel-t5 data-state="open" class="grid p-5 pt-0 gap-4 sm:gap-5 transition-all duration-300 md:grid">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 col-span-full">
+                        <div class="sm:col-span-2">
+                            <label for="deskripsiKarakter-t5" class="block text-sm text-slate-300 mb-1">Deskripsi Singkat Karakter</label>
+                            <input id="deskripsiKarakter-t5" class="w-full bg-slate-800/80 border border-slate-700/60 text-slate-200 placeholder-slate-500 rounded-xl px-3 py-3 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:ring-offset-2 focus:ring-offset-slate-900" placeholder="Contoh: Pria 30an, santai, percaya diri" />
+                        </div>
+                        <div>
+                            <label for="bahasaDialog-t5" class="block text-sm text-slate-300 mb-1">Bahasa Dialog</label>
+                            <select id="bahasaDialog-t5" class="w-full bg-slate-800/80 border border-slate-700/60 text-slate-200 rounded-xl px-3 py-3 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:ring-offset-2 focus:ring-offset-slate-900">
+                                <option>Bahasa Indonesia</option><option>English</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="lipSync-t5" class="block text-sm text-slate-300 mb-1">Lip Sync</label>
+                            <select id="lipSync-t5" class="w-full bg-slate-800/80 border border-slate-700/60 text-slate-200 rounded-xl px-3 py-3 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:ring-offset-2 focus:ring-offset-slate-900">
+                                <option>Active</option><option>Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+              </div>
+              <div class="bg-slate-900/60 backdrop-blur border border-slate-700/60 rounded-2xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] transition-all duration-300">
+                <h2 id="accordion-header-3-t5">
+                    <button type="button" data-accordion-trigger-t5 aria-expanded="true" aria-controls="accordion-panel-3-t5" class="w-full flex justify-between items-center p-5 text-left">
+                        <span class="text-lg md:text-xl font-semibold text-white">3. Dialog & Generate Timeline</span>
+                        <svg class="w-6 h-6 text-slate-400 transition-transform duration-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                </h2>
+                <div id="accordion-panel-3-t5" data-accordion-panel-t5 data-state="open" class="grid p-5 pt-0 gap-4 sm:gap-5 transition-all duration-300 md:grid">
+                    <div class="col-span-full">
+                        <label for="dialog-t5" class="block text-sm text-slate-300 mb-1">Dialog Karakter</label>
+                        <textarea id="dialog-t5" rows="5" class="w-full bg-slate-800/80 border border-slate-700/60 text-slate-200 placeholder-slate-500 rounded-xl px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:ring-offset-2 focus:ring-offset-slate-900" placeholder="Masukkan dialog di sini... Contoh: Halo semua, lihat jaket ini — bahannya lembut banget!"></textarea>
+                    </div>
+                    <div class="col-span-full">
+                        <label for="maxActions-t5" class="block text-sm text-slate-300 mb-1">Maksimum Aksi (Gerakan)</label>
+                        <input id="maxActions-t5" type="number" value="8" class="w-full bg-slate-800/80 border border-slate-700/60 text-slate-200 placeholder-slate-500 rounded-xl px-3 py-3 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:ring-offset-2 focus:ring-offset-slate-900" />
+                    </div>
+                    <div class="hidden md:block col-span-full">
+                        <button id="generateBtn-t5" type="button" class="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white rounded-xl px-4 py-3 font-semibold transition-colors duration-200 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+                            Generate Motion Timeline
+                        </button>
+                    </div>
+                </div>
+              </div>
+            </div>
+            <div id="outputSection-t5" class="bg-slate-900/60 backdrop-blur border border-slate-700/60 rounded-2xl shadow-[0_10px_30px_-12px_rgba(0,0,0,0.5)] hidden overflow-hidden">
+                <div class="sticky top-0 bg-slate-900/80 backdrop-blur-sm flex justify-between items-center p-5 border-b border-slate-700/60 z-10">
+                    <h2 class="text-lg md:text-xl font-semibold text-white">Hasil Timeline Gerakan (JSON)</h2>
+                    <button id="copyBtn-t5" type="button" class="bg-slate-700 hover:bg-slate-600 active:bg-slate-800 text-slate-200 font-semibold py-2 px-4 rounded-xl text-sm transition-colors duration-200">Salin</button>
+                </div>
+                <div class="p-5">
+                    <textarea id="finalPrompt-t5" rows="20" class="w-full font-mono text-sm leading-relaxed bg-slate-950/70 border border-slate-700/60 text-slate-300 rounded-xl p-4 max-h-[50vh] overflow-auto focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:ring-offset-2 focus:ring-offset-slate-950/70" readonly></textarea>
+                </div>
+                <div id="copy-feedback-t5" role="status" aria-live="polite" class="text-green-400 text-sm p-3 text-center bg-green-500/10 border-t border-green-500/20 hidden">Timeline berhasil disalin!</div>
+            </div>
+          </div>
+          <div class="md:hidden sticky bottom-0 z-20 p-3 bg-slate-900/80 backdrop-blur-sm border-t border-slate-700/60">
+              <button id="generateBtnMobile-t5" type="button" class="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white rounded-xl px-4 py-3 font-semibold transition-colors duration-200 flex items-center justify-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+                  Generate Motion Timeline
+              </button>
+          </div>
+      </section>
+
+      <section id="tab2" class="tab-content">
+        <!-- ... Konten Tab 2 (Analisis Pose) ... -->
+        <div class="card p-5 sm:p-7">
+          <header class="text-center mb-6">
+            <h2 class="text-xl sm:text-2xl font-semibold text-[var(--text)]">Ekstraktor Pose model</h2>
+            <p class="mt-2 text-sm subtext">Unggah gambar referensi untuk analisis pose.</p>
+          </header>
+          <div class="grid md:grid-cols-2 gap-6 lg:gap-8 items-start">
+            <div class="flex flex-col items-center panel p-5">
+              <h3 class="text-base font-medium mb-3 text-[var(--text)]">1) Unggah Gambar Referensi</h3>
+              <div id="image-container-t2" class="w-full aspect-square bg-[var(--bg)] rounded-lg mb-4 flex items-center justify-center overflow-hidden border border-[var(--card-border)]">
+                <img id="imagePreview-t2" src="" alt="Pratinjau" class="hidden w-full h-full object-contain"/>
+                <span id="placeholderText-t2" class="text-gray-400 dark:text-gray-500 text-sm">Pratinjau tampil di sini</span>
+              </div>
+              <input type="file" id="imageUpload-t2" class="hidden" accept="image/*">
+              <label for="imageUpload-t2" class="w-full btn btn-primary cursor-pointer">
+                Pilih Gambar
+              </label>
+              <button id="analyzeBtn-t2" class="w-full mt-2 btn btn-ink disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-500" disabled>
+                Analisis Pose
+              </button>
+            </div>
+            <div class="panel p-5 min-h-[320px]">
+              <h3 class="text-base font-medium mb-3 text-[var(--text)]">2) Hasil Analisis Pose</h3>
+              <div id="loader-t2" class="hidden mx-auto my-12 loader"></div>
+              <div id="resultsContent-t2" class="prose max-w-none text-[var(--text)] dark:text-[var(--subtext)]">
+                <p class="italic text-gray-400 dark:text-gray-500">Hasil analisis akan muncul setelah gambar dianalisis.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab1" class="tab-content">
+        <!-- ... Konten Tab 1 (Analisis Latar) ... -->
+        <div class="card p-5 sm:p-7">
+          <header class="text-center mb-6">
+            <h2 class="text-xl sm:text-2xl font-semibold text-[var(--text)]">Analisis Latar Foto Otomatis</h2>
+            <p class="mt-2 text-sm subtext">Unggah foto — dapatkan deskripsi dekorasi, properti, dan pencahayaan.</p>
+          </header>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start">
+            <div class="flex flex-col items-center justify-center gap-4">
+              <div id="image-upload-container-t1" class="w-full">
+                <label for="file-upload-t1" class="file-input-label">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 dark:text-gray-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                  <span class="mt-1 text-sm font-medium text-gray-600 dark:text-gray-300">Klik untuk unggah / tarik & lepas</span>
+                  <span class="text-xs text-gray-400 dark:text-gray-500">PNG, JPG, WEBP (≤ 4MB)</span>
+                </label>
+                <input id="file-upload-t1" type="file" class="hidden" accept="image/png, image/jpeg, image/webp"/>
+              </div>
+              <div id="image-preview-container-t1" class="hidden w-full max-w-md mx-auto">
+                <img id="image-preview-t1" src="#" alt="Pratinjau" class="rounded-lg object-contain max-h-[26rem] w-full bg-gray-50 dark:bg-slate-800"/>
+                <button id="change-image-btn-t1" class="mt-3 w-full btn btn-ink">
+                  Ganti Gambar
+                </button>
+              </div>
+            </div>
+            <div class="flex flex-col">
+              <h3 class="text-lg font-semibold mb-3 text-[var(--text)]">Hasil Analisis</h3>
+              <div class="relative panel p-4 min-h-[18rem] sm:min-h-[22rem] overflow-y-auto">
+                <div id="placeholder-t1" class="text-gray-500 h-full flex flex-col items-center justify-center text-center p-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-gray-300 dark:text-gray-600"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                  <p class="mt-3 font-medium">Deskripsi akan muncul di sini</p>
+                  <p class="text-xs text-gray-400 dark:text-gray-500">Unggah gambar untuk mulai menganalisis.</p>
+                </div>
+                <div id="loading-t1" class="hidden absolute inset-0 bg-[var(--card-bg)]/80 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg">
+                  <div class="loader"></div>
+                  <p class="mt-3 subtext text-sm font-medium">Menganalisis gambar...</p>
+                </div>
+                <div id="analysis-output-t1" class="text-[var(--text)] font-normal leading-relaxed text-sm sm:text-[0.95rem]"></div>
+              </div>
+              <div class="flex gap-3 mt-4">
+                <button id="analyze-btn-t1" disabled class="w-full btn btn-primary disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:text-gray-500 disabled:cursor-not-allowed">
+                  Analisis Gambar
+                </button>
+                <button id="copy-btn-t1" class="hidden btn btn-ink">
+                  Salin
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- REMOVED TAB 6 CONTENT FOR NOW -->
+      <!-- <section id="tab6" class="tab-content"> ... </section> -->
+
+    </main>
+
+    <footer class="text-center py-6">
+      <p class="text-xs text-gray-400 dark:text-gray-600">Created By @studiofahmy</p>
+    </footer>
+  </div>
+
+  <div id="image-modal-t3" class="modal">
+    <div class="modal-content">
+      <img id="modal-image-t3" src="" class="max-w-full max-h-full rounded-xl shadow-soft" alt="Preview Besar">
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+  <script>
+    // Function to create and manage the login modal
+    function createLoginModal() {
+        // Overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'loginOverlay';
+
+        // Modal
+        const modal = document.createElement('div');
+        modal.id = 'loginModal';
+
+        modal.innerHTML = `
+            <h2>Login Diperlukan</h2>
+            <p class="subtext mb-4 text-sm">Silakan masukkan token akses Anda untuk melanjutkan.</p>
+            <input type="text" id="tokenInput" placeholder="Masukkan token" />
+            <button id="loginBtn">Login</button>
+            <div id="loginError" class="text-sm">Token tidak valid!</div>
+            <div id="loginStatus" class="subtext text-xs mt-3"></div>
+        `;
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        const loginBtn = modal.querySelector('#loginBtn');
+        const tokenInput = modal.querySelector('#tokenInput');
+        const errorDiv = modal.querySelector('#loginError');
+        const statusDiv = modal.querySelector('#loginStatus');
+        const welcomeText = document.getElementById('welcomeText'); // Get the welcome text element
+
+        loginBtn.addEventListener('click', async () => {
+            const token = tokenInput.value.trim();
+            if (!token) {
+                errorDiv.textContent = 'Token tidak boleh kosong.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            loginBtn.disabled = true;
+            tokenInput.disabled = true;
+            errorDiv.style.display = 'none';
+            statusDiv.textContent = 'Memverifikasi token...';
+
+            try {
+                // Using the provided validation URL
+                const resp = await fetch('https://kode.inonedev.site/token/check/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'accept': 'application/json' },
+                    body: JSON.stringify({ token })
+                });
+                console.log(resp)
+                // Check if response is OK (status in 200-299 range)
+                if (!resp.ok) {
+                    let errorMsg = `Gagal memvalidasi token (Status: ${resp.status}).`;
+                    try {
+                        // Try to parse error details from response body if available
+                        const errorData = await resp.json();
+                        if (errorData && errorData.detail) {
+                           errorMsg += ` Detail: ${errorData.detail}`;
+                          console.log(errorData.detail)
+                        }
+                    } catch (parseError) {
+                        // Ignore if response body is not JSON or empty
+                        errorMsg += " Coba lagi nanti.";
+                    }
+                     throw new Error(errorMsg);
+                }
+
+                const data = await resp.json();
+                console.log(data)
+
+                if (data.is_valid === true) {
+                    // Token valid → remove modal and show welcome message
+                    statusDiv.textContent = 'Token valid. Login berhasil!';
+                    welcomeText.classList.remove('hidden'); // Show welcome text
+                    // Remove modal after a short delay
+                    setTimeout(() => {
+                        if (document.body.contains(overlay)) {
+                            overlay.remove();
+                        }
+                    }, 1000);
+                } else {
+                    // Token not valid according to the API response
+                    errorDiv.textContent = data.detail || 'Token tidak valid.'; // Use detail message if provided
+                    errorDiv.style.display = 'block';
+                    statusDiv.textContent = ''; // Clear status
+                    loginBtn.disabled = false;
+                    tokenInput.disabled = false;
+                }
+            } catch (err) {
+                // Network error or other fetch-related issues
+                console.error('Login error:', err);
+                errorDiv.textContent = err.message || 'Terjadi kesalahan jaringan atau server.';
+                errorDiv.style.display = 'block';
+                statusDiv.textContent = ''; // Clear status
+                loginBtn.disabled = false;
+                tokenInput.disabled = false;
+            }
+        });
+    }
+
+    // Run modal on page load
+    window.addEventListener('DOMContentLoaded', createLoginModal);
+
+
+    // ===== GLOBAL callApi =====
+    window.GENERATIVE_API_KEY = ""; // Kunci API akan disediakan saat runtime
+    window.callApi = async function(payload, isText = true, options = {}) {
+      // Menambahkan logika exponential backoff
+      const MAX_RETRIES = 5;
+      let attempt = 0;
+      let delay = 1000; // 1 detik
+
+      while (attempt < MAX_RETRIES) {
+        try {
+          const apiKey = window.GENERATIVE_API_KEY;
+          
+          // Use gemini-2.5-flash-preview-09-2025 unless explicitly specified
+          const defaultTextModel = options.model || "gemini-2.5-flash-preview-09-2025";
+          const defaultImageModel = options.model || "gemini-2.5-flash-image-preview";
+          const model = isText ? defaultTextModel : defaultImageModel;
+          
+          // const defaultTextModel = "gemini-2.5-flash-preview-05-20";
+          // const defaultImageModel = "gemini-2.5-flash-image-preview";
+          // const model = options.model || (isText ? defaultTextModel : defaultImageModel);
+
+
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+          const res = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (res.status === 429) {
+            // Error throttling (Too Many Requests)
+            throw new Error('API error 429');
+          }
+
+          if (!res.ok) {
+            const txt = await res.text().catch(()=>"");
+            throw new Error(`API error ${res.status} ${res.statusText} ${txt}`);
+          }
+          const result = await res.json();
+
+          if (!result || !result.candidates || result.candidates.length === 0) {
+            if (result && result.promptFeedback) throw new Error(`Ditolak: ${result.promptFeedback.blockReason}`);
+            throw new Error('Respon API tidak valid atau kosong.');
+          }
+
+          if (isText) {
+            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text === undefined || text === null) throw new Error('Tidak ada data teks diterima.'); // Check specifically for undefined/null
+            return text; // Sukses, keluar dari loop
+          }
+
+          // Handle Image
+          const inline = result.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+           if (!inline || !inline.inlineData || !inline.inlineData.data) {
+             // Fallback check for potential promptFeedback related to image generation safety
+             if (result.promptFeedback && result.promptFeedback.blockReason) {
+                throw new Error(`Pembuatan gambar ditolak: ${result.promptFeedback.blockReason}`);
+             }
+            throw new Error('Tidak ada data gambar diterima.');
+          }
+          return `data:image/png;base64,${inline.inlineData.data}`; // Sukses, keluar dari loop
+        
+        } catch (err) {
+          // No console.warn for retries to avoid console spam
+          // console.warn(`Global callApi error (Attempt ${attempt + 1}/${MAX_RETRIES}):`, err.message);
+          attempt++;
+          if (attempt >= MAX_RETRIES || !err.message.includes('API error 429')) {
+             // Gagal permanen atau bukan error throttling
+             console.error("Global callApi error:", err);
+             throw err; // Lempar error terakhir
+          }
+          // Tunggu sebelum mencoba lagi
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay *= 2; // Double delay
+        }
+      }
+      // Added explicit throw if loop finishes without success
+      throw new Error(`Gagal memanggil API setelah ${MAX_RETRIES} percobaan.`);
+    };
+    // ===========================
+
+    /**
+     * Mengekstrak string JSON pertama yang valid dari teks.
+     * Berguna jika AI menambahkan teks percakapan sebelum/sesudah blok JSON.
+     */
+    window.extractValidJSON = function(text) {
+      if (!text || typeof text !== 'string') {
+        console.error("extractValidJSON: Input bukan string", text);
+        return null; // Kembalikan null jika input tidak valid
+      }
+      
+      // Try parsing directly first - simplest case
+      try {
+          JSON.parse(text);
+          return text;
+      } catch (e) {
+          // Ignore, proceed to regex/markdown cleaning
+      }
+
+      // Cari blok JSON pertama yang dimulai dengan { dan diakhiri dengan }
+      // Make regex non-greedy (using ?) to capture the first valid block better
+      const match = text.match(/\{[\s\S]*?\}/); 
+      
+      if (match && match[0]) {
+        try {
+          // Uji apakah blok yang ditemukan adalah JSON yang valid
+          JSON.parse(match[0]);
+          return match[0]; // Sukses, kembalikan string JSON yang bersih
+        } catch (e) {
+          // console.warn("extractValidJSON: Menemukan blok {} tapi gagal parse. Mencoba fallback.", e);
+        }
+      }
+      
+      // Fallback: jika regex gagal, coba bersihkan markdown
+      let cleaned = text.trim();
+      if (cleaned.startsWith("```json")) {
+          cleaned = cleaned.substring(7, cleaned.length - 3).trim();
+      } else if (cleaned.startsWith("```")) {
+          cleaned = cleaned.substring(3, cleaned.length - 3).trim();
+      }
+
+      // Coba parse lagi setelah membersihkan markdown
+      try {
+        JSON.parse(cleaned);
+        return cleaned;
+      } catch (e) {
+         console.error("extractValidJSON: Gagal menemukan/parse JSON yang valid dari teks:", text);
+         return null; // Gagal total
+      }
+    };
+    
+ document.addEventListener('DOMContentLoaded', () => {
+      const tabs = document.querySelectorAll('.tab-button');
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tabContents.forEach(c => c.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById(tab.dataset.tab).classList.add('active');
+        });
+      });
+      initTool1(); initTool2(); initTool3(); initTool4(); initTool5();
+      // initTool6(); // <-- REMOVED Init call for tool 6
+    });
+
+// ========================================================================
+//  LOGIKA POSE GLOBAL
+// ========================================================================
+
+window.POSES = [
+  // === STANDING / BERDIRI ===
+  "Berdiri tegak dengan postur profesional, tangan di depan tubuh dengan tenang.",
+  "Berdiri menyamping sedikit, tatap kamera dengan senyum ringan.",
+  "Berdiri dengan satu tangan di saku, ekspresi percaya diri tapi santai.",
+  "Bersandar di kursi/meja dengan gaya minimalis, ekspresi fokus.",
+  "Postur tegak dengan bahu ke belakang, tampil elegan dan meyakinkan.",
+  "Menatap jauh ke samping, tangan di dagu seolah berpikir.",
+  "Berdiri dengan satu kaki sedikit maju, tangan memegang produk di depan dada.",
+  "Bersandar ringan di dinding, kaki disilang, gaya urban.",
+  "Pose power stance, kedua kaki sejajar, ekspresi siap beraksi.",
+  "Berdiri dengan tubuh sedikit condong ke depan, tatap kamera intens.",
+  "Menoleh ke belakang dengan ekspresi misterius namun tenang.",
+
+  // === SITTING / DUDUK ===
+  "Duduk di kursi dengan posisi tegak, tangan di pangkuan, profesional.",
+  "Duduk santai di kursi tinggi, satu tangan di meja, produk di samping.",
+  "Duduk di tangga, ekspresi natural, melihat ke arah produk.",
+  "Duduk di tepi meja, kaki menyilang, ekspresi elegan.",
+  "Duduk bersandar ke belakang dengan pose kasual namun rapi.",
+  "Duduk sambil memegang produk di pangkuan, tersenyum lembut.",
+  "Duduk menyamping, satu tangan menopang dagu, tampilan stylish.",
+
+  // === ACTION / GERAK ===
+  "Berjalan perlahan ke arah kamera, langkah elegan.",
+  "Melangkah dengan ayunan tangan natural, ekspresi bahagia.",
+  "Menunjuk atau mengangkat produk dengan gesture alami.",
+  "Membuka produk atau memeragakan penggunaannya dengan ekspresi fokus.",
+  "Melihat produk di tangan dengan senyum puas.",
+  "Menawarkan produk ke arah kamera, ekspresi yakin.",
+  "Memegang produk di bahu, ekspresi playful tapi classy.",
+
+  // === PRODUCT-FOCUSED ===
+  "Memegang produk di tengah frame dengan dua tangan, ekspresi netral.",
+  "Produk di depan dada, tatapan fokus ke kamera.",
+  "Menunjukkan detail produk dengan satu tangan, wajah netral.",
+  "Produk di atas meja, model menunjuk atau memperlihatkannya.",
+  "Produk di samping wajah, ekspresi lembut dan bersih (cocok untuk beauty/skincare).",
+
+  // === CASUAL & CREATIVE ===
+  "Candid look — seolah tertawa di tengah percakapan.",
+  "Melihat ke bawah sambil tersenyum kecil, gaya candid natural.",
+  "Pose selfie-style, ekspresi playful tapi tetap rapi.",
+  "Menutup sebagian wajah dengan produk, hanya mata terlihat (misterius).",
+  "Pose miring ke depan dengan tatapan lembut dan pencahayaan lembut.",
+];
+window.COUPLE_POSES = [
+  // === STANDING / BERDIRI ===
+  "Berdiri berdampingan, satu memegang produk, yang lain menatapnya dengan kagum.",
+  "Berdiri berhadapan, tersenyum kecil, produk di tengah.",
+  "Satu berdiri sedikit di depan, yang lain di belakang menatap kamera.",
+  "Berdiri bersisian dengan jarak dekat, keduanya tersenyum ke arah produk.",
+  "Berdiri saling menyentuh bahu, tatap kamera dengan percaya diri.",
+  "Berdiri punggung-ke-punggung, produk di tangan kanan salah satu model.",
+  "Satu bersandar di meja, yang lain berdiri di samping, tatap satu arah.",
+
+  // === CASUAL / NATURAL ===
+  "Saling menatap dan tertawa kecil, vibe candid dan hangat.",
+  "Berjalan berdua, yang satu menunjukkan produk ke yang lain.",
+  "Satu menunjuk produk di tangan pasangannya, ekspresi kagum.",
+  "Berbisik kecil sambil menunjukkan produk ke kamera.",
+  "Satu memegang produk, yang lain menaruh tangan di bahu, ekspresi tenang.",
+  "Berpelukan ringan, produk di tengah frame.",
+  "Satu menatap produk, yang lain menatap kamera dengan ekspresi bangga.",
+
+  // === CREATIVE / LIFESTYLE ===
+  "Duduk berdampingan di kursi, produk di meja di depan mereka.",
+  "Berada di lokasi outdoor, berdiri saling menatap dengan pencahayaan alami.",
+  "Satu menunduk memperhatikan produk, yang lain tersenyum ke arah kamera.",
+  "Keduanya memegang produk yang sama, ekspresi harmonis.",
+  "Pose saling berpunggungan tapi keduanya menatap kamera, gaya dinamis.",
+];
+
+// ----------------- POSE TRACKING (FUNGSI GLOBAL) -----------------
+// Global tracker — simpan sebagai Set untuk performa & cek unik cepat
+window.usedPosesTracker = {
+  single: new Set(),
+  couple: new Set()
+};
+
+// Internal shuffled pools to draw from when tracker resets
+window._shuffledPoolCache = {
+  single: null,
+  couple: null
+};
+
+// Utility: Fisher-Yates shuffle (non-destructive)
+window.shuffleArray = function(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Reset & rebuild shuffled pool for a given trackerKey
+window._resetPoolIfNeeded = function(trackerKey, poseList) {
+  if (!Array.isArray(window._shuffledPoolCache[trackerKey]) || window._shuffledPoolCache[trackerKey].length === 0) {
+    window._shuffledPoolCache[trackerKey] = window.shuffleArray(poseList.slice());
+    // when resetting (all used before) also clear used tracker so we start fresh
+    window.usedPosesTracker[trackerKey].clear();
+  }
+}
+
+// Pilih 1 pose unik (tidak ada di used tracker) untuk tipe model (single/couple)
+window.getNextUniquePose = function(modelCount) {
+  const isCouple = (modelCount >= 2);
+  const poseList = isCouple ? window.COUPLE_POSES : window.POSES;
+  const trackerKey = isCouple ? 'couple' : 'single';
+
+  // Safety: jika poseList kosong -> fallback ke string
+  if (!Array.isArray(poseList) || poseList.length === 0) {
+    return 'Pose default: berdiri natural, ekspresi netral. PENTING: Pose harus berbeda dari foto sebelumnya.';
+  }
+
+  window._resetPoolIfNeeded(trackerKey, poseList);
+
+  // Try to take from cached shuffled pool until we find one not used (max attempts to avoid infinite loop)
+  let attempts = 0;
+  while (attempts < poseList.length) {
+    if (window._shuffledPoolCache[trackerKey].length === 0) {
+      // pool empty -> reset once more
+      window._resetPoolIfNeeded(trackerKey, poseList);
+    }
+    const candidate = window._shuffledPoolCache[trackerKey].shift();
+    attempts++;
+
+    // Safety check if candidate is undefined (shouldn't happen with reset logic)
+    if (!candidate) continue; 
+
+    if (!window.usedPosesTracker[trackerKey].has(candidate)) {
+      window.usedPosesTracker[trackerKey].add(candidate);
+      return `${candidate} PENTING: Pose harus berbeda dari foto sebelumnya.`;
+    }
+    // if already used (should be rare because we clear used on reset), continue loop
+  }
+
+  // Fallback: choose any not-yet-used by scanning poseList
+  for (const p of poseList) {
+    if (!window.usedPosesTracker[trackerKey].has(p)) {
+      window.usedPosesTracker[trackerKey].add(p);
+      return `${p} PENTING: Pose harus berbeda dari foto sebelumnya.`;
+    }
+  }
+
+  // Final fallback: all used and something's weird — clear tracker and return a random pose (will also reset on next call)
+  window.usedPosesTracker[trackerKey].clear();
+  window._shuffledPoolCache[trackerKey] = window.shuffleArray(poseList.slice());
+  const fallback = window._shuffledPoolCache[trackerKey].shift() || poseList[0]; // Added fallback if shift fails
+  if (fallback) window.usedPosesTracker[trackerKey].add(fallback);
+  return `${fallback || 'Pose default fallback'} PENTING: Pose harus berbeda dari foto sebelumnya.`;
+}
+
+// Buat daftar pose unik sebanyak totalCount (memanggil getNextUniquePose berulang)
+window.generateUniquePoses = function(totalCount, modelCount) {
+  const list = [];
+  for (let i = 0; i < totalCount; i++) {
+    list.push(window.getNextUniquePose(modelCount));
+  }
+  return list;
+}
+// ----------------- END POSE TRACKING -----------------
+/* ==================== TOOL 3 (PAGE 1) ==================== */
+    function initTool3(){
+      const ULTRA_REALISM=`Gaya foto kamera profesional sony fx 3 Hyper realistis lensa 50mm, depth of field natural, grain halus, warna akurat, white balance netral, pencahayaan fisik realistis, ketajaman natural, resolusi tinggi 4k.`;
+      const NEGATIVE_PROMPT=`kartun, ilustrasi, CGI, 3D render, anime, filter berlebihan, HDR berlebihan, kulit seperti plastik/lilin, terlalu halus, noise/artefak JPEG, pixelated, resolusi rendah, oversharpen, color banding, aberasi kromatik berlebihan, distorsi lensa tidak realistis, watermark, frame, border, teks pada gambar, subtitle, tangan/jari tidak realistis (jari ekstra/kurang), proporsi tubuh salah, mata juling, bayangan/tangan hantu, refleksi tidak konsisten, pose mustil, pakaian/aksesoris berubah dari referensi.`;
+      
+      const downloadAllBtn=document.getElementById('download-all-button-t3');
+      const generateButton=document.getElementById('generate-button-t3');
+
+      // product inputs (6)
+      const productInputs = {
+        front: document.getElementById('product-image-front-t3'),
+        side: document.getElementById('product-image-side-t3'),
+        back: document.getElementById('product-image-back-t3'),
+        top: document.getElementById('product-image-top-t3'),
+        bottom: document.getElementById('product-image-bottom-t3'),
+        detail: document.getElementById('product-image-detail-t3'),
+      };
+      const productPreviews = {
+        front: document.getElementById('product-preview-front-t3'),
+        side: document.getElementById('product-preview-side-t3'),
+        back: document.getElementById('product-preview-back-t3'),
+        top: document.getElementById('product-preview-top-t3'),
+        bottom: document.getElementById('product-preview-bottom-t3'),
+        detail: document.getElementById('product-preview-detail-t3'),
+      };
+
+      const productPreview=document.getElementById('product-preview-t3');
+
+      const productInfoInput=document.getElementById('product-info-input-t3');
+      const modelInputsContainer=document.getElementById('model-inputs-container-t3');
+      const addModelButton=document.getElementById('add-model-button-t3');
+      const modelStyleInput=document.getElementById('model-style-input-t3');
+      const poseDescriptionInput=document.getElementById('pose-description-input-t3');
+      const poseDescriptionSection=document.getElementById('pose-description-section-t3');
+      const modelGenderSelect=document.getElementById('model-gender-select-t3');
+      const logoInput=document.getElementById('logo-image-t3');
+      const logoPreview=document.getElementById('logo-preview-t3');
+      const ratioSelect=document.getElementById('ratio-select-t3');
+      const descriptionSection=document.getElementById('description-section-t3');
+      const productInfoSection=document.getElementById('product-info-section-t3');
+      const textToggle=document.getElementById('text-toggle-t3');
+      const logoUploadSection=document.getElementById('logo-upload-section-t3');
+      const messageContainer=document.getElementById('message-container-t3');
+      const modelGenderSection=document.getElementById('model-gender-section-t3');
+      const imageModal=document.getElementById('image-modal-t3');
+      const modalImage=document.getElementById('modal-image-t3');
+
+      let modelCounter=0;
+      let consistentModelPrompt='';
+
+      const allPrompts = {
+        broll: [
+            { text: `B-ROLL — REPLIKASI 1:1 FOTO REFERENSI. Buat ulang SANGAT IDENTIK dengan foto referensi. FOKUS UTAMA: Replikasi presisi pada MODEL, PRODUK, dan POSE bervariasi menyesuaikan konsep foto produk. JANGAN mengubah detail, logo, atau warna. Gaya: Full body, tampilan sinematik profesional. Sudut kamera bervariasi. Model berada di [LOKASI], dengan pencahayaan [PENCAHAYAAN] menciptakan suasana [SUASANA]. Ekspresi natural dan elegan.` },
+            { text: `B-ROLL — REPLIKASI 1:1 FOTO REFERENSI. Buat ulang SANGAT IDENTIK dengan foto referensi. FOKUS UTAMA: Replikasi presisi pada MODEL, PRODUK, dan POSE bervariasi menyesuaikan konsep foto produk. JANGAN mengubah detail, logo, atau warna. Gaya: Full body, tampilan sinematik profesional. Sudut kamera bervariasi. Model berada di [LOKASI], dengan pencahayaan [PENCAHAYAAN] menciptakan suasana [SUASANA]. Ekspresi natural dan elegan.` },
+            { text: `B-ROLL — REPLIKASI 1:1 FOTO REFERENSI. Buat ulang SANGAT IDENTIK dengan foto referensi. FOKUS UTAMA: Replikasi presisi pada MODEL, PRODUK, dan POSE bervariasi menyesuaikan konsep foto produk. JANGAN mengubah detail, logo, atau warna. Gaya: Full body, tampilan sinematik profesional. Sudut kamera bervariasi. Model berada di [LOKASI], dengan pencahayaan [PENCAHAYAAN] menciptakan suasana [SUASANA]. Ekspresi natural dan elegan.` },
+            { text: `B-ROLL — REPLIKASI 1:1 FOTO REFERENSI. Buat ulang SANGAT IDENTIK dengan foto referensi. FOKUS UTAMA: Replikasi presisi pada MODEL, PRODUK, dan POSE bervariasi menyesuaikan konsep foto produk . JANGAN mengubah detail, logo, atau warna. Gaya: Full body, tampilan sinematik profesional. Sudut kamera bervariasi. Model berada di [LOKASI], dengan pencahayaan [PENCAHAYAAN] menciptakan suasana [SUASANA]. Ekspresi natural dan elegan.` },
+        ],
+        ugc: [
+            { text: `UGC — REPLIKASI 1:1 FOTO REFERENSI. Buat ulang SANGAT IDENTIK dengan foto referensi. FOKUS UTAMA: Replikasi presisi pada MODEL, PRODUK, dan POSE. bervariasi menyesuaikan konsep foto produk JANGAN mengubah detail, logo, atau warna. Gaya: Full body, tampilan sinematik profesional. Sudut kamera bervariasi. Model berada di [LOKASI], dengan pencahayaan [PENCAHAYAAN] dan suasana [SUASANA]. Sudut kamera tinggi (high angle) dari atas sekitar 45°. Ekspresi natural dan elegan.` },
+            { text: `UGC — REPLIKASI 1:1 FOTO REFERENSI. Buat ulang SANGAT IDENTIK dengan foto referensi. FOKUS UTAMA: Replikasi presisi pada MODEL, PRODUK, dan POSE bervariasi menyesuaikan konsep foto produk. JANGAN mengubah detail, logo, atau warna. Gaya: Full body, gambar sinematik ultra-realistis. Sudut kamera bervariasi, pencahayaan [PENCAHAYAAN] realistis, fokus tajam, detail tekstur halus. Model mengenakan produk identik referensi, berpose sesuai referensi di [LOKASI] dengan suasana [SUASANA].` },
+            { text: `UGC — REPLIKASI 1:1 FOTO REFERENSI. Buat ulang SANGAT IDENTIK dengan foto referensi. FOKUS UTAMA: Replikasi presisi pada MODEL, PRODUK, dan POSE bervariasi menyesuaikan konsep foto produk. JANGAN mengubah detail, logo, atau warna. Gaya: Full body, foto sinematik ultra-realistis kamera low angle, depth of field dangkal. Pencahayaan [PENCAHAYAAN], bayangan realistis. Model mengenakan produk identik referensi dengan pose yang cocok di [LOKASI] dengan suasana [SUASANA].` },
+            { text: `UGC — REPLIKASI 1:1 FOTO REFERENSI. Buat ulang SANGAT IDENTIK dengan foto referensi Tanpa model. Fotografi produk komersial bergaya Minimalis Klinis (Clinical Minimalism). produk referensi tertata rapi di atas permukaan putih bersih. Latar belakang putih murni bergaya infinity curve, menghasilkan ruang seamless. Palet dua warna: putih cerah, Cahaya studio buatan intens high-key, soft fill light depan-atas, ditambah directional key light dari kanan atas. Bayangan tajam jatuh diagonal ke bawah, menambah kedalaman tanpa mengganggu kesan higienis. Suasana profesional, klinis, dan murni — menekankan formula dan transparansi produk referensi.` }, // <-- Prompt ini statis (flat lay), jadi tidak kita ubah.
+        ],
+        commercial: [
+            { text: `COMMERCIAL — Flat lay shoot dari atas dengan produk SANGAT IDENTIK dengan foto referensi,Produk tertata rapi di atas lantai dan dikelilingi properti yang relevan denga produk referensi. Cahaya matahari alami golden hour yang keras dari samping (jendela kotak), menciptakan bayangan yang dalam dan tajam. Suasana minimalis, cerah, dan chic. (tanpa model)pertahankan logo/nama brand jika ada.` },
+            { text: `COMMERCIAL — Manekin tanpa kepala (gender sesuai referensi) dengan proporsi tubuh seperti model. Mengenakan pakaian referensi. Di showroom fashion elegan, sudut sedikit rendah. Cahaya hangat dan lembut. Tanpa aksesori dengan background bokeh tampak ada beberapa orang sedang lalulalang berbelanja.(jika produk referensi hanya baju, maka tambahkan celana yang relevan dan sebaliknya) (jika produk bukan kategori fashion  maka jangan dibuat tertera di manekin).` },
+            { text: `COMMERCIAL — Close-up: pakaian di gantungan kayu, dipegang oleh tangan. Lantai beludru coklat, dinding krem, dekorasi buram. Cahaya sore dari jendela samping. Produk di tengah, (jika produknya bukan pakaian/celana maka buat si produknya sedang dipegang langsung oleh tangan), jika produknya lebih dari 1 maka pilih salah satu baju/celana atau produk yang digantung di hanger/dipegang.` },
+            { text: `COMMERCIAL — Flat lay shoot dari atas dengan produk SANGAT IDENTIK dengan foto referensi,Produk tertata rapi di atas seprai putih yang kusut dan dikelilingi properti yang relevan denga produk referensi. Cahaya matahari alami yang keras dari samping, menciptakan bayangan yang dalam dan tajam. Suasana minimalis, cerah, dan chic. (tanpa model)pertahankan logo/nama brand jika ada.`},
+        ],
+      };
+
+
+      const aspectRatios={ portrait:{width:1080,height:1920}, vertical:{width:1080,height:1350}, square:{width:1600,height:1600}, landscape:{width:1920,height:1080} };
+
+      const modelGenerationPrompts={
+        male:'Seorang pria muda Indonesia dengan rambut hitam pendek, dan senyum hangat. Mengenakan kemeja kasual.',
+        female:'Seorang wanita muda Indonesia dengan rambut cokelat panjang bergelombang, ekspresi ramah, dan mengenakan blus sederhana.',
+        auto:'Seorang wanita muda dari Indonesia dengan senyum ramah, mengenakan atasan kasual dan celana jeans. Dia memiliki rambut panjang berwarna gelap dan postur yang baik.',
+      };
+
+      async function fetchAsBlob(url){const res=await fetch(url);return await res.blob();}
+
+      downloadAllBtn?.addEventListener('click', async () => {
+        try{
+          downloadAllBtn.disabled=true;const originalText=downloadAllBtn.querySelector('span').textContent;downloadAllBtn.querySelector('span').textContent='Menyiapkan ZIP...';
+          const imageNodes=document.querySelectorAll('#output-column-t3 .image-container img');
+          if(!imageNodes.length){downloadAllBtn.querySelector('span').textContent=originalText;downloadAllBtn.disabled=false;return showMessage('Belum ada gambar untuk diunduh.','error');}
+          const zip=new JSZip(); let index=1;
+          for(const img of imageNodes){
+            const card=img.closest('.flex-col');const cardId=card?.dataset?.cardId||`image-${index}`;
+            const currentSrc=img.src;const blob=await fetchAsBlob(currentSrc);
+            const filename=`${cardId||'image'}-${index}.png`;zip.file(filename,blob);index++;
+          }
+          const zipBlob=await zip.generateAsync({type:'blob'});
+          const url=URL.createObjectURL(zipBlob); const a=document.createElement('a');
+          a.href=url; a.download=`affiliate-images-${new Date().toISOString().slice(0,10)}.zip`; document.body.appendChild(a); a.click();
+          document.body.removeChild(a); URL.revokeObjectURL(url);
+          downloadAllBtn.querySelector('span').textContent=originalText;downloadAllBtn.disabled=false;showMessage('ZIP siap! Semua gambar berhasil dikumpulkan.','success');
+        }catch(err){console.error(err);downloadAllBtn.querySelector('span').textContent='Coba Lagi';downloadAllBtn.disabled=false;showMessage('Gagal membuat ZIP. Coba lagi ya.','error');}
+      });
+
+      function addModelInput(){
+        if(modelCounter>=2) return;
+        modelCounter++;
+        const inputId=`model-image-${modelCounter}-t3`;
+        const previewId=`model-preview-${modelCounter}-t3`;
+        const wrapperId=`model-wrapper-${modelCounter}-t3`;
+        const wrapper=document.createElement('div'); wrapper.id=wrapperId; wrapper.className='relative pt-2';
+        const deleteButtonHTML=`<button type="button" class="absolute -top-1 right-0 text-red-600 hover:text-red-700 text-xs font-semibold" onclick="window.removeModelInputTool3('${wrapperId}')">Hapus Model ${modelCounter}</button>`; // Added type="button"
+        wrapper.innerHTML=`
+          <div class="flex justify-between items-center mb-2">
+            <label class="block text-[var(--text)] font-medium text-sm" for="${inputId}">Model ${modelCounter}</label>
+            ${deleteButtonHTML}
+          </div>
+          <input type="file" id="${inputId}" accept="image/*" class="model-image-input w-full text-gray-800 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-gray-900 file:text-white hover:opacity-95 cursor-pointer dark:file:bg-slate-700">
+          <div id="${previewId}" class="mt-2 flex justify-center items-center h-44 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700/50 rounded-lg overflow-hidden">
+            <span class="text-gray-400 dark:text-gray-500 text-sm">Pratinjau Model ${modelCounter}</span>
+          </div>`;
+        modelInputsContainer.appendChild(wrapper);
+        document.getElementById(inputId).addEventListener('change', handleModelInputChange);
+        updateAddModelButton(); updateUIBasedOnModels();
+      }
+      window.removeModelInputTool3=function(wrapperId){const w=document.getElementById(wrapperId); if(w){w.remove(); modelCounter--; updateAddModelButton(); updateUIBasedOnModels();}}
+      function handleModelInputChange(e){const inputId=e.target.id; const modelNum=inputId.split('-')[2]; const previewElement=document.getElementById(`model-preview-${modelNum}-t3`); if(e.target.files[0]) previewImage(e,previewElement,e.target); updateUIBasedOnModels();}
+      function updateUIBasedOnModels(){const modelInputs=document.querySelectorAll('.model-image-input'); let uploaded=0; modelInputs.forEach(i=>{if(i.files.length>0) uploaded++;}); const has=uploaded>0; descriptionSection.classList.toggle('hidden',!has); modelGenderSection.classList.toggle('hidden',has||modelCounter>0); poseDescriptionSection.classList.toggle('hidden',modelCounter<2);}
+      function updateAddModelButton(){addModelButton.disabled=(modelCounter>=2); addModelButton.classList.toggle('opacity-50',modelCounter>=2);}
+      addModelButton.addEventListener('click', addModelInput);
+
+      textToggle.addEventListener('change', ()=>{logoUploadSection.classList.toggle('hidden',!textToggle.checked); if(!textToggle.checked){logoInput.value=''; logoPreview.innerHTML=`<span class="text-gray-400 text-sm">Pratinjau Logo</span>`; logoPreview.querySelector('.delete-btn')?.remove();}});
+
+      // preview handler all 6 product inputs
+      const productKeys = ['front','side','back','top','bottom','detail'];
+      productKeys.forEach(key => {
+        const inp  = productInputs[key];
+        const prev = productPreviews[key];
+        if (!inp || !prev) return;
+
+        inp.addEventListener('change', (e) => {
+          if (e.target.files[0]) previewImage(e, prev, inp);
+          productInfoSection.classList.toggle('hidden', getSelectedProductFiles().length === 0);
+          productPreview.innerHTML = getSelectedProductFiles().length > 0
+            ? `<div class="text-green-700 dark:text-green-400 text-sm">✔️ ${getSelectedProductFiles().length} foto produk dipilih</div>`
+            : `<span class="text-gray-400 dark:text-gray-500 text-sm">Pratinjau Foto Produk</span>`;
+        });
+      });
+
+      logoInput.addEventListener('change', (e)=>previewImage(e,logoPreview,logoInput));
+
+      function previewImage(event, previewElement, inputElement){
+        const file=event.target.files[0];
+        if(file){
+          const reader=new FileReader();
+          reader.onload=(e)=>{
+            const img=new Image();
+            img.onload=()=>{
+              const canvas=document.createElement('canvas'); const ctx=canvas.getContext('2d');
+              canvas.width=img.width; canvas.height=img.height; ctx.drawImage(img,0,0);
+              const pngUrl=canvas.toDataURL('image/png');
+              previewElement.innerHTML=`<img src="${pngUrl}" alt="Image Preview" class="h-full w-full object-cover">`;
+              if(!inputElement.classList.contains('model-image-input')) addDeleteButton(previewElement,inputElement);
+            };
+            img.src=e.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
+      function addDeleteButton(previewElement, inputElement){
+        previewElement.querySelector('.delete-btn')?.remove();
+        const btn=document.createElement('button');
+        btn.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
+        btn.className='delete-btn absolute top-1 right-1 bg-red-600/80 text-white rounded-full w-6 h-6 flex justify-center items-center cursor-pointer';
+        btn.type = 'button'; // Prevent form submission if inside a form
+        btn.onclick=(e)=>{
+          e.stopPropagation(); inputElement.value='';
+          const id=inputElement.id;
+          const mapLabelByIdPrefix = [
+            { prefix: 'product-image-front-',  label: 'Pratinjau Depan' },
+            { prefix: 'product-image-side-',   label: 'Pratinjau Samping' },
+            { prefix: 'product-image-back-',   label: 'Pratinjau Belakang' },
+            { prefix: 'product-image-top-',    label: 'Pratinjau Atas' },
+            { prefix: 'product-image-bottom-', label: 'Pratinjau Bawah' },
+            { prefix: 'product-image-detail-', label: 'Pratinjau Detail' },
+          ];
+          let matched = false;
+          for (const m of mapLabelByIdPrefix) {
+            if (id.startsWith(m.prefix)) {
+              previewElement.innerHTML = `<span class="text-gray-400 dark:text-gray-500 text-xs">${m.label}</span>`;
+              matched = true; break;
+            }
+          }
+          if (!matched && id === 'logo-image-t3') {
+            previewElement.innerHTML = `<span class="text-gray-400 dark:text-gray-500 text-sm">Pratinjau Logo</span>`;
+          }
+
+          productPreview.innerHTML = getSelectedProductFiles().length > 0
+            ? `<div class="text-green-700 dark:text-green-400 text-sm">✔️ ${getSelectedProductFiles().length} foto produk dipilih</div>`
+            : `<span class="text-gray-400 dark:text-gray-500 text-sm">Pratinjau Foto Produk</span>`;
+          productInfoSection.classList.toggle('hidden', getSelectedProductFiles().length === 0);
+        };
+        previewElement.appendChild(btn);
+      }
+
+      addModelInput(); // minimal 1 slot model
+
+
+      generateButton.addEventListener('click', async ()=>{
+        const selectedProductFiles=getSelectedProductFiles();
+        const modelInputs=document.querySelectorAll('.model-image-input');
+        const modelFiles=Array.from(modelInputs).map(i=>i.files[0]).filter(Boolean);
+
+        if(selectedProductFiles.length===0){
+          showMessage('Minimal unggah 1 foto produk (depan/samping/belakang).','error');
+          return;
+        }
+
+        generateButton.disabled=true;
+        generateButton.textContent='Menganalisis Konsep...'; 
+
+        ['broll','ugc','commercial'].forEach(cat=>{
+          const container = document.getElementById(`${cat}-container-t3`);
+          if(container) container.innerHTML=''; // Check if container exists
+        });
+
+        // --- MULAI LOGIKA PRA-ANALISIS ---
+        const conceptText = productInfoInput.value.trim();
+        // Nilai default jika analisis gagal atau input kosong
+        let conceptData = {
+            lokasi: "ruangan studio minimalis",
+            pencahayaan: "pencahayaan studio yang lembut dan merata",
+            suasana: "elegan dan bersih"
+        };
+
+        if (conceptText) {
+            const preAnalysisSystemPrompt = `Anda adalah asisten analisis konsep. Analisis deskripsi konsep foto berikut. Ekstrak 'lokasi', 'pencahayaan', dan 'suasana'. JANGAN tambahkan penjelasan. Kembalikan HANYA objek JSON yang valid. Contoh Input: 'foto di kafe outdoor, sore hari, santai'. Contoh Output: {\"lokasi\": \"kafe di luar ruangan\", \"pencahayaan\": \"sore hari, cahaya hangat\", \"suasana\": \"santai dan rileks\"}`;
+            
+            const preAnalysisUserPrompt = `Input Pengguna: "${conceptText}"`;
+
+            const payload = {
+                contents: [{ parts: [{ text: preAnalysisUserPrompt }] }],
+                systemInstruction: { parts: [{ text: preAnalysisSystemPrompt }] },
+            };
+            
+            try {
+                const resultText = await window.callApi(payload, true);
+                const jsonString = window.extractValidJSON(resultText);
+                if (jsonString) {
+                    const parsedData = JSON.parse(jsonString);
+                    // Gabungkan hasil parse dengan default, untuk jaga-jaga jika AI tidak mengembalikan semua keys
+                    conceptData = { ...conceptData, ...parsedData };
+                    showMessage('Analisis konsep berhasil!', 'success');
+                } else {
+                    throw new Error("AI tidak mengembalikan JSON valid.");
+                }
+            } catch (err) {
+                console.warn("Gagal menganalisis konsep, menggunakan default.", err);
+                showMessage('Gagal analisis konsep, pakai latar default.', 'error');
+            }
+        }
+        // --- SELESAI LOGIKA PRA-ANALISIS ---
+
+        generateButton.textContent='Sedang Membuat...'; // Lanjutkan ke pembuatan gambar
+
+        // Buat salinan dinamis dari allPrompts
+        const dynamicPrompts = JSON.parse(JSON.stringify(allPrompts));
+
+        // Ganti placeholder di salinan
+        ['broll', 'ugc'].forEach(category => {
+            // Jangan ubah prompt UGC ke-4 (index 3) karena itu flat lay statis
+            const promptsToModify = category === 'ugc' 
+                ? dynamicPrompts[category].slice(0, 3) 
+                : dynamicPrompts[category];
+
+            promptsToModify.forEach(promptData => {
+                promptData.text = promptData.text
+                    .replace(/\[LOKASI\]/g, conceptData.lokasi)
+                    .replace(/\[PENCAHAYAAN\]/g, conceptData.pencahayaan)
+                    .replace(/\[SUASANA\]/g, conceptData.suasana);
+            });
+        });
+        // --- SELESAI PENGGANTIAN PLACEHOLDER ---
+
+
+        const productBase64List=await Promise.all(selectedProductFiles.map(({file})=>toBase64(file)));
+        const modelBase64s=await Promise.all(modelFiles.map(file=>toBase64(file)));
+        const logoBase64=textToggle.checked && logoInput.files[0] ? await toBase64(logoInput.files[0]) : null;
+
+        if(modelFiles.length===0){
+          let gender=modelGenderSelect.value;
+          if(gender==='auto') gender=Math.random()<0.5?'male':'female';
+          consistentModelPrompt=modelGenerationPrompts[gender];
+        } else { consistentModelPrompt=''; }
+
+        const totalImagesToGenerate = Object.keys(dynamicPrompts).reduce((acc, c) => acc + dynamicPrompts[c].length, 0);
+        const modelCount = modelFiles.length;
+        
+        const uniquePosesList = window.generateUniquePoses(totalImagesToGenerate, modelCount);
+        
+        const ensureCount = 12; // Ensure we have enough poses
+        if(uniquePosesList.length < ensureCount){
+          const extra = window.generateUniquePoses(ensureCount - uniquePosesList.length, modelCount);
+          uniquePosesList.push(...extra);
+        }
+
+        function getNextPose(){
+           // Use modulo operator to cycle through poses if we run out of unique ones
+           const index = (window._poseIndex || 0) % uniquePosesList.length;
+           window._poseIndex = index + 1;
+           return uniquePosesList[index] || window.getNextUniquePose(modelCount); // Fallback if list is somehow empty
+        }
+        window._poseIndex = 0; // Reset index before generation starts
+
+
+        const selectedRatio=ratioSelect.value;
+        const options={
+          ratio:aspectRatios[selectedRatio],
+          productInfo:productInfoInput.value.trim(),
+          modelStyle:modelStyleInput.value.trim(),
+          poseDescription:poseDescriptionInput.value.trim(),
+          textEnabled:textToggle.checked,
+          generatedModelPrompt:consistentModelPrompt
+        };
+
+        const categoryPromises=Object.keys(dynamicPrompts).map(category=>{
+          const container=document.getElementById(`${category}-container-t3`);
+           if (!container) return Promise.resolve(); // Skip if container not found
+
+          const promises=dynamicPrompts[category].map((promptData,i)=>{
+            const card=createPlaceholder(container,selectedRatio);
+            const files={
+              product:{ dataList: productBase64List },
+              models:modelFiles.map((file,idx)=>({mimeType:'image/png',data:modelBase64s[idx]})),
+              logo:logoBase64?{mimeType:'image/png',data:logoBase64}:null
+            };
+            
+            let selectedPose = getNextPose();
+            if(modelFiles.length === 1){
+              selectedPose = `gunakan pose: ${selectedPose} jika perlu Ikuti pose dari foto model referensi`;
+            } else if (modelFiles.length >= 2){
+              selectedPose = `gunakan Pose: ${selectedPose}Jika perlu Ikuti interaksi/pose kedua foto model referensi (couple)`;
+            } else {
+              selectedPose = `Pose acak: ${selectedPose}`;
+            }
+
+            const promptInfo={category, prompt:promptData.text, id:`${category}-${i}`, selectedPose };
+            return generateAndDisplayImage(promptInfo,files,options,card,selectedRatio, modelCount);
+          });
+          return Promise.all(promises);
+        });
+
+        await Promise.all(categoryPromises);
+
+        generateButton.disabled=false;
+        generateButton.textContent='Generate Konten';
+      });
+
+
+      function createPlaceholder(container,ratioKey){
+        const card=document.createElement('div'); card.dataset.cardId=Math.random().toString(36).slice(2);
+        const ratio=aspectRatios[ratioKey];
+        card.className = 'w-full card flex flex-col items-center justify-center'; // Added centering classes
+        const ar=document.createElement('div');
+        // Removed fixed aspect ratio style, let content define height initially
+        ar.className='w-full flex flex-col items-center justify-center p-4'; 
+        ar.innerHTML=`
+          <div class="flex flex-col items-center">
+            <div class="loader mb-2"></div>
+            <span class="progress-text text-xs subtext">0%</span>
+          </div>
+          <div class="relative h-1.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden mt-2 w-full max-w-[80%]"> <!-- Added max-width -->
+            <div class="progress-bar absolute top-0 left-0 h-full bg-brand-600 dark:bg-blue-500" style="width:0%"></div>
+          </div>`;
+        card.appendChild(ar); container.appendChild(card); return card;
+      }
+
+      async function generateAndDisplayImage(promptInfo,files,options,card,ratioKey, modelCount){
+        const {category,prompt,id,selectedPose}=promptInfo;
+        const {product,models,logo}=files;
+        card.dataset.cardId=id;
+
+        const isStaticStudioShot = (id === 'ugc-3');
+
+        let attempt=0; const maxAttempts=3;
+        if(!card.dataset.originalPrompt) card.dataset.originalPrompt=prompt;
+
+        while(attempt<maxAttempts){
+          try{
+            let imageUrlWithText=null; let imageUrlWithoutText=null;
+            
+            // Ensure progress elements exist before trying to access them
+            const progressBar = card.querySelector('.progress-bar');
+            const progressText = card.querySelector('.progress-text');
+            let progress = 0;
+            let interval = null; // Declare interval variable
+
+            if (progressBar && progressText) {
+                interval = setInterval(() => {
+                    if (progress < 98) {
+                        progress += 2;
+                        progressBar.style.width = `${progress}%`;
+                        progressText.textContent = `${progress}%`;
+                    } else {
+                        clearInterval(interval); // Stop interval near 100%
+                    }
+                }, 180);
+            }
+
+
+            // --- Mulai Logika Prompt ---
+            const baseParts = [{ text: '' }];
+            product.dataList.forEach(data64 => {
+                 if (data64 && data64.includes(',')) { // Basic check for base64 format
+                    baseParts.push({ inlineData: { mimeType: 'image/png', data: data64.split(',')[1] }});
+                 }
+            });
+            
+            if (!isStaticStudioShot && models && models.length > 0 && category !== 'commercial') {
+              models.forEach(m => {
+                 if (m.data && m.data.includes(',')) { // Basic check for base64 format
+                    baseParts.push({ inlineData: { mimeType: m.mimeType, data: m.data.split(',')[1] }});
+                 }
+              });
+            }
+
+            let identityBlock = '';
+            if(!isStaticStudioShot && models && models.length > 0 && category !== 'commercial'){
+              identityBlock = 'PENTING: Gunakan foto model referensi (inline image) sebagai sumber utama untuk WAJAH. Replikasi fitur wajah secara akurat (bentuk wajah,alis,mata, hidung, bibir, rahang, warna kulit, tanda lahir,rambut,warna rambut, warna mata). Jaga konsistensi identitas di semua output. Jangan menambahkan/ubah fitur wajah. ';
+            }
+
+            const sceneAndPropsPrompt = '';
+            const ratioPrompt = `PENTING: Gambar ini akan dipotong menjadi rasio ${ratioKey} (${options.ratio.width}:${options.ratio.height}). `;
+            
+            let basePrompt = `${ratioPrompt}${prompt}. ${sceneAndPropsPrompt}`; 
+
+            if (!isStaticStudioShot) {
+                if (selectedPose && category !== 'commercial') {
+                    basePrompt += ` Pose model (hanya postur, tanpa properti/pakaian): "${selectedPose}". `;
+                }
+                
+                if (options.modelStyle && category !== 'commercial') {
+                    basePrompt += `Model mengenakan pakaian ini: "${options.modelStyle}". `;
+                }
+
+                if (options.poseDescription && models.length > 1 && category !== 'commercial') {
+                    basePrompt = basePrompt.replace('Dia sedang menggunakan', 'Mereka sedang berinteraksi');
+                    basePrompt += ` Interaksi dan pose mereka adalah: "${options.poseDescription}". `;
+                }
+
+                basePrompt += identityBlock;
+
+                if (models.length === 0 && category !== 'commercial') {
+                    basePrompt += ` ${options.generatedModelPrompt}`;
+                }
+            }
+            
+            basePrompt += ` ${ULTRA_REALISM} NEGATIVE PROMPT: ${NEGATIVE_PROMPT}`;
+
+            const partsWithoutText = [...baseParts];
+            partsWithoutText[0] = { text: basePrompt };
+            
+            const payloadWithoutText = {
+              contents:[{ parts: partsWithoutText }],
+              generationConfig:{
+                responseModalities:['IMAGE'],
+              }
+            };
+            // --- Akhir Logika Prompt ---
+            
+            // Make API call
+            imageUrlWithoutText = await window.callApi(payloadWithoutText, false);
+
+
+            if(options.textEnabled){
+                let textPromptPart = '';
+                if (options.productInfo) textPromptPart = `Dari deskripsi produk ini: "${options.productInfo}", buatlah tulisan iklan singkat berupa Judul (maksimal 2 kata), Isi (maksimal 4 kata), dan Call-to-Action (jika ada info kontak). PENTING: Gunakan bahasa yang sama persis dengan deskripsi produk untuk tulisan iklan yang kamu buat.`;
+                const promptForTextAddition = `Dari gambar referensi ini, tambahkan tulisan iklan yang diimprovisasi. ${textPromptPart} PERINTAH FONT: Sans-serif tebal modern. Ukuran proporsional (≤17% tinggi). PERINTAH POSISI: Lower-third tengah. JANGAN mengubah apapun selain menambahkan teks.`;
+                const partsWithText = [
+                    { text: promptForTextAddition },
+                    { inlineData: { mimeType: 'image/png', data: imageUrlWithoutText.split(',')[1] } }
+                ];
+                if (logo && logo.data && logo.data.includes(',')) {
+                    const logoPrompt = ` Tambahkan logo berikut di posisi top-center berukuran proporsional.`;
+                    partsWithText[0].text += logoPrompt; // Append to the existing text part
+                    partsWithText.push({ inlineData: { mimeType: logo.mimeType, data: logo.data.split(',')[1] } });
+                }
+                const payloadWithText = {
+                    contents: [{ parts: partsWithText }],
+                    generationConfig: { responseModalities: ['IMAGE'] }
+                };
+                imageUrlWithText = await window.callApi(payloadWithText, false);
+            }
+
+
+             if (interval) clearInterval(interval); // Clear interval when done or before error
+
+            // Proceed only if imageUrlWithoutText is valid
+            if (!imageUrlWithoutText || !imageUrlWithoutText.startsWith('data:image')) {
+                throw new Error("Gagal mendapatkan gambar dasar dari API.");
+            }
+
+            const croppedUrlWithText=imageUrlWithText?await cropImage(imageUrlWithText,ratioKey):null;
+            const croppedUrlWithoutText=imageUrlWithoutText?await cropImage(imageUrlWithoutText,ratioKey):null;
+            card.dataset.imageUrlWithText=croppedUrlWithText;
+            card.dataset.imageUrlWithoutText=croppedUrlWithoutText;
+            const initialImageUrl=croppedUrlWithText||croppedUrlWithoutText;
+
+            // Clear placeholder content and update card styles
+            card.innerHTML = '';
+            card.classList.remove('items-center', 'justify-center', 'p-4');
+            card.classList.add('flex-col');
+            card.style.aspectRatio = 'unset'; // Remove fixed aspect ratio
+
+
+            const imageContainer=document.createElement('div');
+            const ratio=aspectRatios[ratioKey];
+            imageContainer.className='image-container w-full rounded-t-xl relative overflow-hidden';
+            imageContainer.style.aspectRatio=`${ratio.width} / ${ratio.height}`; // Set aspect ratio on the container
+            imageContainer.innerHTML=`<img src="${initialImageUrl}" alt="Generated Photo" class="w-full h-full object-cover">`;
+
+            if(options.textEnabled && croppedUrlWithText && croppedUrlWithoutText){ // Check if both URLs exist
+              const textToggleOnCard=document.createElement('div');
+              textToggleOnCard.className='absolute top-2 left-2 z-10';
+              textToggleOnCard.innerHTML=`<label class="relative inline-flex items-center cursor-pointer select-none">
+                <input type="checkbox" class="sr-only peer text-visibility-toggle" checked>
+                <div class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600 dark:peer-checked:bg-blue-500"></div>
+                <span class="ml-2 text-xs font-medium text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)]">Teks</span> <!-- Added drop shadow -->
+              </label>`;
+              imageContainer.appendChild(textToggleOnCard);
+              textToggleOnCard.querySelector('.text-visibility-toggle').addEventListener('change',(e)=>{
+                const img=imageContainer.querySelector('img');
+                 if(img) img.src=e.target.checked?card.dataset.imageUrlWithText:card.dataset.imageUrlWithoutText; // Check if img exists
+              });
+            }
+
+            const buttonContainer=document.createElement('div');
+            // Adjusted styles for better visibility
+            buttonContainer.className='absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200'; 
+            imageContainer.classList.add('group'); // Add group class for hover effect
+
+            buttonContainer.innerHTML=`
+              <button type="button" class="download-button btn btn-ink text-xs px-2.5 py-1">Unduh</button> <!-- Adjusted padding -->
+              <button type="button" class="view-button btn btn-primary text-xs px-2.5 py-1">Lihat</button> <!-- Adjusted padding -->
+              <button type="button" class="refresh-button bg-white/80 backdrop-blur border border-gray-300 text-gray-900 px-2.5 py-1 rounded-lg shadow-sm text-xs hover:bg-white">Ulangi</button>`; // Adjusted styles
+            imageContainer.appendChild(buttonContainer);
+            card.appendChild(imageContainer);
+
+            buttonContainer.querySelector('.download-button').addEventListener('click',(ev)=>{ev.preventDefault(); const current=imageContainer.querySelector('img')?.src; if(current) downloadImage(current,`${id}.png`);}); // Added check
+            buttonContainer.querySelector('.view-button').onclick=()=>{const current=imageContainer.querySelector('img')?.src; if(current) viewImage(current);}; // Added check
+            
+            buttonContainer.querySelector('.refresh-button').onclick=()=>{
+              const originalPrompt=card.dataset.originalPrompt; 
+              const modified=`${originalPrompt} Coba lagi dengan perspektif/komposisi/pencahayaan berbeda. ${ULTRA_REALISM} NEGATIVE PROMPT: ${NEGATIVE_PROMPT}`; 
+              
+              const newSelectedPose = window.getNextUniquePose(modelCount); 
+              
+              const pInfo={...promptInfo, prompt:modified, selectedPose: newSelectedPose };
+              
+              // Reset card to placeholder state before regenerating
+              const placeholderHTML = createPlaceholder(document.createElement('div'), ratioKey).innerHTML;
+              card.innerHTML = placeholderHTML;
+              card.classList.remove('flex-col'); // Remove class added after generation
+              card.classList.add('items-center', 'justify-center', 'p-4'); // Re-add placeholder classes
+              card.style.aspectRatio = ''; // Clear aspect ratio
+              
+              generateAndDisplayImage(pInfo,files,options,card,ratioKey, modelCount);
+            };
+            
+            return; // Success
+          }catch(error){
+             if (interval) clearInterval(interval); // Clear interval on error too
+            attempt++; console.error(`Attempt ${attempt} failed for ${id}:`,error);
+            if(attempt>=maxAttempts){
+              let errorMessage = error.message;
+              if (error.message.includes('Ditolak:')) {
+                  errorMessage = `Gambar diblokir (Alasan: ${error.message.split('Ditolak:')[1]?.trim() || 'tidak diketahui'})`; // Safer split
+              } else if (error.message.includes('API error 429')) {
+                  errorMessage = "Terlalu banyak permintaan. Coba lagi dalam 1 menit.";
+              } else if (error.message.includes('API error')) {
+                  errorMessage = "Terjadi kesalahan API. Silakan coba lagi.";
+              } else if (error.message.includes('Tidak ada data gambar diterima')) {
+                   errorMessage = "Gagal memproses gambar. Coba lagi.";
+              }
+
+
+              const ratio = aspectRatios[ratioKey];
+              
+              card.innerHTML = `<div class="w-full p-4 text-center text-red-700 dark:text-red-400 font-medium text-sm flex flex-col justify-center items-center" 
+                                   style="aspect-ratio: ${ratio.width} / ${ratio.height};">
+                  <p class="font-semibold">Gagal membuat foto.</p>
+                  <span class="text-xs text-red-600 dark:text-red-500 mt-1">${errorMessage}</span>
+                  <button type="button" class="mt-2 text-xs bg-gray-900 text-white py-1 px-3 rounded-md hover:opacity-95 retry-button">Coba Lagi</button> <!-- Added type and class -->
+              </div>`;
+              
+              card.querySelector('.retry-button').onclick=()=>{
+                 // Reset card to placeholder state before retrying
+                 const placeholderHTML = createPlaceholder(document.createElement('div'), ratioKey).innerHTML;
+                 card.innerHTML = placeholderHTML;
+                 card.classList.remove('flex-col');
+                 card.classList.add('items-center', 'justify-center', 'p-4');
+                 card.style.aspectRatio = '';
+                 
+                 generateAndDisplayImage(promptInfo,files,options,card,ratioKey, modelCount);
+              };
+            }else{
+              // Khusus untuk error 429, tunggu lebih lama
+              const waitTime = error.message.includes('API error 429') ? 3000 * attempt : 1000 * attempt;
+              await new Promise(r=>setTimeout(r, waitTime));
+            }
+          }
+        }
+      }
+      
+
+      function viewImage(url){modalImage.src=url; imageModal.style.display='flex';}
+      imageModal.onclick=(e)=>{if(e.target.id==='image-modal-t3') imageModal.style.display='none';};
+
+      async function cropImage(imageUrl,ratioKey){
+        return new Promise((resolve, reject) => { // Added reject
+          const img=new Image(); 
+          img.crossOrigin = "anonymous"; // Attempt to handle potential CORS issues if loading external data URLs
+          const targetW=aspectRatios[ratioKey]?.width; 
+          const targetH=aspectRatios[ratioKey]?.height;
+
+          // Add validation for target dimensions
+          if (!targetW || !targetH) {
+              console.error("Invalid ratio key provided:", ratioKey);
+              return reject(new Error("Invalid image ratio key."));
+          }
+
+
+          img.onload=()=>{
+            const canvas=document.createElement('canvas'); const ctx=canvas.getContext('2d');
+            
+            // Check if image loaded with zero dimensions (error)
+            if (img.naturalWidth === 0 || img.naturalHeight === 0) {
+                 console.error("Image loaded with zero dimensions:", imageUrl);
+                 return reject(new Error("Gagal memuat gambar untuk cropping."));
+            }
+
+
+            const sourceRatio=img.naturalWidth/img.naturalHeight; // Use naturalWidth/Height
+            const targetRatio=targetW/targetH;
+            let cw,ch,cx,cy;
+            if(sourceRatio>targetRatio){ ch=img.naturalHeight; cw=img.naturalHeight*targetRatio; cx=(img.naturalWidth-cw)/2; cy=0; }
+            else { cw=img.naturalWidth; ch=img.naturalWidth/targetRatio; cx=0; cy=(img.naturalHeight-ch)/2; }
+            
+            // Ensure calculated dimensions are positive
+             if (cw <= 0 || ch <= 0 || cx < 0 || cy < 0) {
+                 console.error("Invalid crop dimensions calculated:", { cw, ch, cx, cy });
+                 // Fallback: use original image dimensions if crop fails
+                 cw = img.naturalWidth;
+                 ch = img.naturalHeight;
+                 cx = 0;
+                 cy = 0;
+             }
+
+            canvas.width=targetW; canvas.height=targetH; 
+            try {
+                 ctx.drawImage(img,cx,cy,cw,ch,0,0,canvas.width,canvas.height);
+                 resolve(canvas.toDataURL('image/png'));
+            } catch (e) {
+                 console.error("Error during canvas drawImage:", e);
+                 // Fallback: Resolve with the original URL if drawing fails
+                 // This might happen due to tainted canvas from CORS
+                 resolve(imageUrl); 
+            }
+          };
+           img.onerror = (e) => { // Added onerror handler
+               console.error("Error loading image for cropping:", e, imageUrl);
+               reject(new Error("Gagal memuat gambar untuk cropping."));
+           };
+          img.src=imageUrl;
+        });
+      }
+
+      async function downloadImage(url,filename){
+        try{
+            // Use fetch to get blob for potentially better handling of data URLs
+            const res = await fetch(url); 
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            const blob = await res.blob(); 
+            const a = document.createElement('a'); 
+            a.style.display = 'none'; 
+            const objectUrl = URL.createObjectURL(blob); // Create object URL from blob
+            a.href = objectUrl; 
+            a.download = filename; 
+            document.body.appendChild(a); 
+            a.click(); 
+            // Cleanup after a short delay
+            setTimeout(() => {
+                document.body.removeChild(a); 
+                URL.revokeObjectURL(objectUrl); // Revoke the object URL
+            }, 100);
+        }
+        catch(e){
+            console.error("Download failed, attempting fallback:", e); 
+            // Fallback for browsers that might have issues with fetch/blob/createObjectURL for data URLs
+            try {
+                const a = document.createElement('a'); 
+                a.href = url; 
+                a.download = filename; 
+                document.body.appendChild(a); 
+                a.click(); 
+                document.body.removeChild(a);
+            } catch (fallbackError) {
+                 console.error("Fallback download also failed:", fallbackError);
+                 alert("Gagal mengunduh gambar."); // Notify user if both methods fail
+            }
+        }
+      }
+
+      const toBase64=file=>new Promise((resolve,reject)=>{
+        const reader=new FileReader(); reader.readAsDataURL(file);
+        reader.onload=()=>{const img=new Image(); img.onload=()=>{
+          const canvas=document.createElement('canvas'); 
+          const ctx=canvas.getContext('2d');
+          canvas.width=img.naturalWidth; canvas.height=img.naturalHeight; // Use natural dimensions
+          ctx.drawImage(img,0,0); 
+          try {
+             resolve(canvas.toDataURL('image/png'));
+          } catch (e) {
+             console.error("Error converting canvas to Base64:", e);
+             // Attempt to resolve with the original reader result if canvas fails (e.g., tainted canvas)
+             if (reader.result && typeof reader.result === 'string') {
+                 resolve(reader.result);
+             } else {
+                 reject(e);
+             }
+          }
+        }; img.onerror=err=>{ console.error("Error loading image in toBase64:", err); reject(err); }; img.src=reader.result?.toString() || ''; }; // Handle potential null result
+        reader.onerror=err=>{ console.error("FileReader error in toBase64:", err); reject(err); };
+      });
+
+      function isAnyProductSelected() { return getSelectedProductFiles().length > 0; }
+      function getSelectedProductFiles() {
+        const files = [];
+        const productKeys = ['front','side','back','top','bottom','detail'];
+        productKeys.forEach(key => {
+          const inp = productInputs[key];
+          if (inp && inp.files && inp.files[0]) {
+            files.push({ key, file: inp.files[0] });
+          }
+        });
+        return files;
+      }
+
+      function showMessage(text,type){
+        const div=document.createElement('div'); div.textContent=text;
+        div.className=`p-3 rounded-lg mb-3 text-center text-sm ${type==='error'?'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-500/30':'bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-500/30'}`;
+        messageContainer.innerHTML=''; messageContainer.appendChild(div); setTimeout(()=>div.remove(),4000);
+      }
+    }
+    /* ==================== TOOL 4 (PAGE 2) ==================== */
+    function initTool4() {
+        const tab4Node = document.getElementById('tab4'); 
+        if (!tab4Node) return;
+
+        const videoUpload = tab4Node.querySelector('#video-upload-t4');
+        const fileNameDisplay = tab4Node.querySelector('#file-name-t4');
+        const generateBtn = tab4Node.querySelector('#generate-btn-t4');
+        const inputSection = tab4Node.querySelector('#input-section-t4');
+        const loadingSection = tab4Node.querySelector('#loading-section-t4');
+        const outputSection = tab4Node.querySelector('#output-section-t4');
+        const errorSection = tab4Node.querySelector('#error-section-t4');
+        const errorMessage = tab4Node.querySelector('#error-message-t4');
+        const startOverBtn = tab4Node.querySelector('#start-over-btn-t4');
+        const visualHookPreview = tab4Node.querySelector('#visual_hook_text_preview-t4');
+        const tonePreferenceSelect = tab4Node.querySelector('#tone-preference-t4');
+        const generateHooksBtn = tab4Node.querySelector('#generate-hooks-btn-t4');
+        const hookVariationsSection = tab4Node.querySelector('#hook-variations-section-t4');
+        const hookVariationsLoader = tab4Node.querySelector('#hook-variations-loader-t4');
+        const hookVariationsList = tab4Node.querySelector('#hook-variations-list-t4');
+        const generateScriptBtn = tab4Node.querySelector('#generate-script-btn-t4');
+        const scriptLoader = tab4Node.querySelector('#script-loader-t4');
+        const newScriptP = tab4Node.querySelector('#new_script-t4');
+
+        const mainSystemPrompt = `
+Kamu adalah asisten kreatif multimedia spesialis TikTok Affiliate — bertugas: TRANSCRIBE video, ANALYZE skrip (struktur: hook→isi→CTA), REWRITE supaya lebih friendly & FYP-friendly, dan RETURN hasil terstruktur dalam format JSON yang ketat. 
+Prioritaskan: keterbacaan di layar ponsel, durasi video TikTok (15–60 detik), dan soft-selling untuk affiliate. Jangan menambahkan instruksi proses di output. Output hanya satu objek JSON valid. Jika confidence transkrip rendah (<0.7), sertakan property "transcription_confidence" dan field "needs_review": true.
+Bahasa: gunakan bahasa Indonesia santai & ramah. Gunakan emoji sewajarnya (maks 3). Hindari klaim medis/illegal. Kalau ada nama produk, gunakan placeholder [NAMA_PRODUK] jika tidak jelas. Pastikan tiap paragraf maksimal 3 baris di layar ponsel.
+
+Langkah-langkah yang harus kamu lakukan:
+1) Transkrip audio → sertakan timestamps awal dan akhir per kalimat.
+2) Analisis struktur: tandai bagian Hook (0-5 detik ideal), Body, CTA.
+3) Rewrite skrip jadi 'new_script' (sesuai durasi max yang diminta), buat 'improved_hook' (1 baris tajam), dan 'suggested_cta' (1 baris).
+4) Buat 'visual_hook_text' (teks overlay 1–2 baris) + berikan start & end timestamp (detik) untuk overlay.
+5) Buat 'short_description' (<150 chars) dan 'long_description' (<=300 chars).
+6) Berikan array 'hashtags' (relevan, max max_hashtags).
+7) Kembalikan semua output sesuai JSON schema di bawah. Jangan output penjelasan lainnya.
+
+JSON SCHEMA (pasti dipatuhi oleh model):
+{ "type": "object", "properties": { "metadata": { "type":"object", "properties":{ "language":{"type":"string"}, "tone":{"type":"string"}, "duration_seconds":{"type":"number"}, "transcription_confidence":{"type":"number"}, "needs_review":{"type":"boolean"} }, "required":["language","tone","duration_seconds","transcription_confidence","needs_review"] }, "transcript_blocks":{ "type":"array", "items":{ "type":"object", "properties":{ "start_sec":{"type":"number"}, "end_sec":{"type":"number"}, "text":{"type":"string"}, "confidence":{"type":"number"} }, "required":["start_sec","end_sec","text","confidence"] } }, "new_script":{"type":"string"}, "improved_hook":{"type":"string"}, "visual_hook_text":{"type":"string"}, "visual_hook_timestamps":{ "type":"object", "properties":{ "start_sec":{"type":"number"}, "end_sec":{"type":"number"} }, "required":["start_sec","end_sec"] }, "short_description":{"type":"string"}, "long_description":{"type":"string"}, "hashtags":{ "type":"array", "items":{"type":"string"} }, "suggested_cta":{"type":"string"}, "overlay_objects":{ "type":"array", "items":{ "type":"object", "properties":{ "text":{"type":"string"}, "start_sec":{"type":"number"}, "end_sec":{"type":"number"}, "style":{"type":"object"} }, "required":["text","start_sec","end_sec"] } } }, "required":["metadata","transcript_blocks","new_script","improved_hook","visual_hook_text","visual_hook_timestamps","short_description","long_description","hashtags","suggested_cta"]}
+
+Fallback & Safety Rules:
+- Jika transkrip confidence < 0.7, set metadata.needs_review = true.
+- Jangan buat klaim medis/keamanan; jika skrip berisi klaim, tambahkan disclaimer pendek atau tandai untuk review.
+- Batasi emoji maksimal 3. Gunakan bahasa sopan.
+`;
+        const applyThemeForTab4 = () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            if (visualHookPreview) {
+                visualHookPreview.style.backgroundColor = isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.8)';
+                visualHookPreview.style.color = isDark ? 'white' : 'black';
+            }
+        };
+        applyThemeForTab4();
+        new MutationObserver(applyThemeForTab4).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        
+        if(videoUpload) {
+            videoUpload.addEventListener('change', () => {
+                if (fileNameDisplay) fileNameDisplay.textContent = videoUpload.files.length > 0 ? videoUpload.files[0].name : '';
+            });
+        }
+
+        if(startOverBtn) {
+            startOverBtn.addEventListener('click', () => {
+                if(outputSection) outputSection.classList.add('hidden');
+                if(errorSection) errorSection.classList.add('hidden');
+                if(hookVariationsSection) hookVariationsSection.classList.add('hidden'); 
+                if(inputSection) inputSection.classList.remove('hidden');
+                if(videoUpload) videoUpload.value = '';
+                if(fileNameDisplay) fileNameDisplay.textContent = '';
+            });
+        }
+        
+        if (generateBtn) {
+            generateBtn.addEventListener('click', async () => {
+                if (!videoUpload || videoUpload.files.length === 0) { // Added null check for videoUpload
+                    showErrorTab4('Silakan upload file video terlebih dahulu.');
+                    return;
+                }
+                
+                const file = videoUpload.files[0];
+                 // Basic validation for file size (e.g., 100MB limit)
+                 const maxSizeMB = 100;
+                 if (file.size > maxSizeMB * 1024 * 1024) {
+                     showErrorTab4(`Ukuran file terlalu besar (maks ${maxSizeMB}MB).`);
+                     return;
+                 }
+
+
+                const styleElement = tab4Node.querySelector('input[name="video-style-t4"]:checked');
+                const style = styleElement ? styleElement.value : 'Storytelling'; // Default style
+                const tone = tonePreferenceSelect ? tonePreferenceSelect.value : 'Friendly'; // Default tone
+
+
+                if(inputSection) inputSection.classList.add('hidden');
+                if(errorSection) errorSection.classList.add('hidden');
+                if(loadingSection) loadingSection.classList.remove('hidden');
+
+                try {
+                    const base64Video = await fileToBase64(file);
+                    
+                    const userPromptObject = { "task": "analyze_and_enhance_video", "video_style": style, "tone_preference": tone, "target_language": "id", "max_hashtags": 12, "max_script_duration_seconds": 60, "mobile_readable": true, "allow_emojis": true };
+                    const userPromptText = `Proses video ini berdasarkan parameter berikut:\n${JSON.stringify(userPromptObject, null, 2)}`;
+                    
+                    const payload = { 
+                        contents: [{ 
+                            parts: [ 
+                                { text: userPromptText }, 
+                                { inlineData: { mimeType: file.type, data: base64Video } } 
+                            ] 
+                        }], 
+                        systemInstruction: { parts: [{ text: mainSystemPrompt }] }, 
+                    };
+                    
+                    // Use a model known for video understanding if available, otherwise fallback
+                     const resultText = await window.callApi(payload, true, { model: "gemini-1.5-pro-preview-0514" });
+                    
+                    if (!resultText) throw new Error("Respons dari AI tidak valid atau kosong.");
+                    
+                    const cleanedResponseText = window.extractValidJSON(resultText);
+                    if (!cleanedResponseText) {
+                         console.error("Gagal extract JSON. Respon mentah:", resultText);
+                        throw new Error("AI tidak mengembalikan format JSON yang valid. Cek konsol.");
+                    }
+                    const data = JSON.parse(cleanedResponseText);
+                    
+                    populateOutput(data);
+                    if(outputSection) outputSection.classList.remove('hidden');
+                } catch (error) {
+                    handleError(error);
+                } finally {
+                    if(loadingSection) loadingSection.classList.add('hidden');
+                }
+            });
+        }
+
+        if (generateHooksBtn) {
+            generateHooksBtn.addEventListener('click', async () => {
+                if(hookVariationsSection) hookVariationsSection.classList.remove('hidden');
+                if(hookVariationsList) hookVariationsList.innerHTML = '';
+                if(hookVariationsLoader) hookVariationsLoader.classList.remove('hidden');
+
+                try {
+                    const scriptContext = newScriptP?.textContent; // Use optional chaining
+                    if (!scriptContext) {
+                        throw new Error("Skrip utama tidak ditemukan untuk dijadikan konteks.");
+                    }
+                    const userPromptText = `Task: Dari transkrip/video ini, buat 3 varian hook singkat (1 baris tiap varian) yang 'menggigit' untuk 0–3 detik pertama. Bahasa Indonesia, friendly. Sertakan alasan 1 kalimat kenapa hook itu efektif. Output JSON: {"hooks":[{"text":"...","reason":"..."}]} \n\nSkrip Konteks:\n${scriptContext}`;
+                    const payload = { contents: [{ parts: [{ text: userPromptText }] }] };
+                    
+                    const resultText = await window.callApi(payload, true);
+                    if (!resultText) throw new Error("Gagal mendapatkan variasi hook dari AI.");
+
+                    const cleanedResponseText = window.extractValidJSON(resultText);
+                    if (!cleanedResponseText) {
+                        console.error("Gagal extract JSON hook. Respon mentah:", resultText);
+                        throw new Error("AI tidak mengembalikan format JSON yang valid.");
+                    }
+                    const data = JSON.parse(cleanedResponseText);
+
+                    if (data.hooks && Array.isArray(data.hooks)) {
+                        data.hooks.forEach(hook => {
+                             if (!hook || typeof hook.text !== 'string' || typeof hook.reason !== 'string') return; // Skip invalid hooks
+                            const div = document.createElement('div');
+                            div.className = "p-3 border border-gray-200 dark:border-gray-700 rounded-lg";
+                            div.innerHTML = `
+                                <p class="font-semibold text-blue-600 dark:text-blue-400">“${hook.text}”</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">${hook.reason}</p>
+                            `;
+                            if (hookVariationsList) hookVariationsList.appendChild(div);
+                        });
+                    } else {
+                         console.warn("Format data hook tidak sesuai:", data);
+                    }
+                } catch (error) {
+                    handleError(error, "Gagal membuat variasi hook.");
+                } finally {
+                    if(hookVariationsLoader) hookVariationsLoader.classList.add('hidden');
+                }
+            });
+        }
+
+        if (generateScriptBtn) {
+            generateScriptBtn.addEventListener('click', async () => {
+                if(scriptLoader) scriptLoader.classList.remove('hidden');
+                if(newScriptP) newScriptP.classList.add('hidden');
+                try {
+                    const scriptContext = newScriptP?.textContent; // Use optional chaining
+                     const styleElement = tab4Node.querySelector('input[name="video-style-t4"]:checked');
+                     const style = styleElement ? styleElement.value : 'Storytelling';
+                     const tone = tonePreferenceSelect ? tonePreferenceSelect.value : 'Friendly';
+
+
+                    if (!scriptContext) throw new Error("Skrip utama tidak ditemukan untuk dijadikan konteks.");
+
+                    const userPromptText = `Task: Berdasarkan skrip berikut, tulis ulang menjadi versi alternatif yang sama-sama engaging. Pertahankan gaya video ('${style}') dan nada ('${tone}'). Jaga agar maknanya tetap sama tapi gunakan pilihan kata yang berbeda dan lebih segar. Output harus berupa JSON dengan satu key: {"new_script": "..."} \n\nSkrip Konteks:\n"${scriptContext}"`;
+                    const payload = { contents: [{ parts: [{ text: userPromptText }] }] };
+
+                    const resultText = await window.callApi(payload, true);
+                    if (!resultText) throw new Error("Gagal mendapatkan skrip baru dari AI.");
+
+                    const cleanedResponseText = window.extractValidJSON(resultText);
+                    if (!cleanedResponseText) {
+                        console.error("Gagal extract JSON skrip baru. Respon mentah:", resultText);
+                        throw new Error("AI tidak mengembalikan format JSON yang valid.");
+                    }
+                    const data = JSON.parse(cleanedResponseText);
+
+                    if (data.new_script && typeof data.new_script === 'string' && newScriptP) { // Added type check
+                        newScriptP.textContent = data.new_script;
+                    } else {
+                         console.warn("Format data skrip baru tidak sesuai:", data);
+                        throw new Error("Format respons untuk skrip baru tidak sesuai.");
+                    }
+                } catch (error) {
+                    handleError(error, "Gagal membuat skrip baru.");
+                } finally {
+                    if(scriptLoader) scriptLoader.classList.add('hidden');
+                    if(newScriptP) newScriptP.classList.remove('hidden');
+                }
+            });
+        }
+        
+        const fileToBase64 = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+             reader.onload = () => {
+                 if (reader.result && typeof reader.result === 'string') {
+                     resolve(reader.result.split(',')[1]);
+                 } else {
+                     reject(new Error("Gagal membaca file sebagai Base64."));
+                 }
+             };
+            reader.onerror = error => reject(error);
+        });
+        
+        function showErrorTab4(message) {
+            if(errorMessage) errorMessage.textContent = message;
+            if(errorSection) errorSection.classList.remove('hidden');
+        }
+
+        function handleError(error, customMessage = null) {
+            console.error('Error during AI processing:', error);
+            let msg = customMessage || error?.message || "Terjadi kesalahan tidak diketahui."; // Use optional chaining and fallback
+            if (msg.includes('API error 429')) {
+                msg = "Terlalu banyak permintaan ke server AI. Coba lagi dalam beberapa saat.";
+            } else if (msg.includes('Ditolak:')) {
+                msg = "Konten diblokir oleh AI karena alasan keamanan. Coba video lain.";
+            }
+             else if (msg.includes('invalid response') || msg.includes('Unexpected token')) {
+                 msg = "Gagal memproses respons dari AI. Coba lagi.";
+             }
+            showErrorTab4(msg);
+        }
+
+        function populateOutput(data) {
+             if (!data || typeof data !== 'object') { // Check if data is a valid object
+                 console.error("Invalid data passed to populateOutput:", data);
+                 handleError(new Error("Menerima data tidak valid dari AI."), "Gagal menampilkan hasil.");
+                 return;
+             }
+
+            const newScript = tab4Node.querySelector('#new_script-t4');
+            const improvedHook = tab4Node.querySelector('#improved_hook-t4');
+            const visualHook = tab4Node.querySelector('#visual_hook_text-t4');
+            const shortDesc = tab4Node.querySelector('#short_description-t4');
+            const longDesc = tab4Node.querySelector('#long_description-t4');
+            const cta = tab4Node.querySelector('#suggested_cta-t4');
+            
+            // Use optional chaining and provide default 'N/A'
+            if(newScript) newScript.textContent = data.new_script || 'N/A';
+            if(improvedHook) improvedHook.textContent = data.improved_hook || 'N/A';
+            if(visualHook) visualHook.textContent = data.visual_hook_text || 'N/A';
+            if(shortDesc) shortDesc.textContent = data.short_description || 'N/A';
+            if(longDesc) longDesc.textContent = data.long_description || 'N/A';
+            if(cta) cta.textContent = data.suggested_cta || 'N/A';
+
+            const hashtagsContainer = tab4Node.querySelector('#hashtags-t4');
+            if(hashtagsContainer) {
+                hashtagsContainer.innerHTML = ''; // Clear previous hashtags
+                if (data.hashtags && Array.isArray(data.hashtags)) {
+                    data.hashtags.forEach(tag => {
+                         if (typeof tag !== 'string') return; // Skip non-string tags
+                        const tagElement = document.createElement('span');
+                        tagElement.className = 'bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-1 rounded-full dark:bg-blue-900 dark:text-blue-300';
+                        tagElement.textContent = tag;
+                        hashtagsContainer.appendChild(tagElement);
+                    });
+                } else if (data.hashtags) {
+                     console.warn("Hashtags received but not in array format:", data.hashtags);
+                }
+            }
+        }
+
+        tab4Node.querySelectorAll('.btn-copy-t4').forEach(button => {
+            button.type = 'button'; // Ensure buttons don't submit forms
+            button.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300', 'font-semibold', 'py-2', 'px-4', 'rounded-lg', 'hover:bg-gray-300', 'dark:hover:bg-gray-600', 'transition-colors');
+            button.addEventListener('click', (e) => {
+                const targetAttr = e.currentTarget.dataset.target;
+                if (!targetAttr) return; // Skip if no target defined
+
+                const targets = targetAttr.split(',');
+                let textToCopy = '';
+                
+                targets.forEach(targetId => {
+                    const element = tab4Node.querySelector(`#${targetId}`);
+                    if (!element) return;
+                    
+                    if(targetId === 'hashtags-t4') {
+                        // Join text content of children, filtering out potential non-element nodes
+                        textToCopy += Array.from(element.children)
+                                         .map(child => child.textContent)
+                                         .filter(Boolean) // Remove empty strings/nulls
+                                         .join(' ');
+                    } else if (targetId === 'short_description-t4' || targetId === 'long_description-t4') {
+                         const titleElement = element.previousElementSibling;
+                         const title = titleElement ? titleElement.textContent : ''; // Safely get title
+                         textToCopy += `${title}\n${element.textContent || ''}\n\n`; // Use || '' as fallback
+                    } else {
+                        textToCopy += element.textContent || ''; // Use || '' as fallback
+                    }
+                });
+
+                 const finaltext = textToCopy.trim();
+                 if (!finaltext) { // Don't try to copy if empty
+                     console.warn("No text found to copy for targets:", targets);
+                     return;
+                 }
+
+
+                 // Use Clipboard API with fallback
+                 if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(finaltext).then(() => {
+                        const originalText = button.innerHTML;
+                        button.innerHTML = '<i class="fas fa-check mr-2"></i> Tersalin!';
+                        button.disabled = true; // Briefly disable
+                        setTimeout(() => { 
+                            button.innerHTML = originalText; 
+                            button.disabled = false;
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Async clipboard write failed: ', err);
+                        // Fallback to execCommand
+                        copyUsingExecCommand(finaltext, button);
+                    });
+                 } else {
+                     // Fallback for older browsers or insecure contexts
+                     copyUsingExecCommand(finaltext, button);
+                 }
+            });
+        });
+
+         // Helper function for execCommand fallback
+         function copyUsingExecCommand(text, button) {
+             const textArea = document.createElement("textarea");
+             textArea.value = text;
+             textArea.style.position = "fixed"; // Prevent scrolling to bottom
+             textArea.style.left = "-9999px";
+             document.body.appendChild(textArea);
+             textArea.focus();
+             textArea.select();
+             try {
+                 const successful = document.execCommand('copy');
+                 if (successful) {
+                     const originalText = button.innerHTML;
+                     button.innerHTML = '<i class="fas fa-check mr-2"></i> Tersalin!';
+                      button.disabled = true;
+                     setTimeout(() => { 
+                         button.innerHTML = originalText; 
+                         button.disabled = false;
+                     }, 2000);
+                 } else {
+                     throw new Error('execCommand unsuccessful');
+                 }
+             } catch (err) {
+                 console.error('Fallback execCommand copy failed: ', err);
+                 alert('Gagal menyalin teks. Silakan salin secara manual.'); // Notify user
+             }
+             document.body.removeChild(textArea);
+         }
+    }
+
+    /* ==================== TOOL 5 (PAGE 3) ==================== */
+    function initTool5() {
+        async function callMotionDirectorAPI(userInput) {
+            const systemPrompt = `You are an expert Motion Director for ultra-realistic virtual actors. Your task is to convert dialogue and context into a timeline of natural physical actions in a strict JSON format.
+
+    **Primary Directive:** The generated actions MUST correspond to the FULL, UNEDITED dialogue text provided in the user's input JSON.
+
+    **Rules:**
+    1.  **Analyze Full Dialogue:** Base all actions on the entire 'dialogue' text. Do not shorten, summarize, or ignore any part of it.
+    2.  **Natural Pacing:** Limit major gestures to one per 1.5-2.0 seconds. Micro-gestures (e.g., eye shifts, slight head tilts) can be more frequent.
+    3.  **Semantic Actions:** Prioritize gestures that clarify meaning (e.g., pointing for "ini/itu", presenting an object when mentioned).
+    4.  **Prosody Alignment:** Align stronger gestures with stressed syllables, emotional keywords, and significant punctuation (!, ?).
+    5.  **No Contradictions:** Ensure actions match the dialogue's emotional tone (e.g., no calm gestures during an angry line).
+    6.  **Confidence Score:** Provide a confidence score for each action and an 'overall_alignment' for the entire sequence.
+    7.  **Strict JSON Output:** The output must be ONLY the JSON object, with no extra text, explanations, or markdown formatting around it. The schema must be followed exactly.`;
+
+            const userQuery = `Based strictly on the full dialogue text and context in the JSON input below, generate a complete motion timeline. Adhere to the exact JSON schema. Ensure every part of the dialogue is considered when creating actions. The 'lang' field in the input indicates the dialogue language. Output JSON only.
+
+    Input:
+    ${JSON.stringify(userInput, null, 2)}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            try {
+                const rawText = await window.callApi(payload, true);
+                const cleanedText = window.extractValidJSON(rawText);
+
+                if (!cleanedText) {
+                    console.error("Failed to parse JSON response from model. Raw response was:", rawText);
+                    // Try to provide a more user-friendly error based on raw text if possible
+                     if (rawText && rawText.toLowerCase().includes("rate limit")) {
+                         return "Terlalu banyak permintaan ke AI. Coba lagi nanti.";
+                     } else if (rawText && rawText.toLowerCase().includes("block")) {
+                         return "Permintaan diblokir karena alasan keamanan konten.";
+                     }
+                    return "Model tidak mengembalikan format JSON yang valid. Lihat konsol untuk detail.";
+                }
+                
+                return JSON.parse(cleanedText); // Langsung return object JSON
+
+            } catch (error) {
+                console.error("Error calling Motion Director API:", error);
+                 let errorMsg = `Gagal menghubungi API. Silakan cek koneksi internet Anda.`;
+                 if (error.message.includes("API error 429")) {
+                     errorMsg = "Terlalu banyak permintaan ke AI. Coba lagi nanti.";
+                 } else if (error.message.includes("Ditolak:")) {
+                     errorMsg = `Permintaan diblokir: ${error.message.split('Ditolak:')[1]?.trim() || 'Alasan tidak diketahui'}`;
+                 } else if (error.message) {
+                     errorMsg += ` Detail: ${error.message}`;
+                 }
+                return errorMsg; // Return error message string
+            }
+        }
+
+        async function generateOutput() {
+          const generateBtn = document.getElementById('generateBtn-t5');
+          const generateBtnMobile = document.getElementById('generateBtnMobile-t5');
+          const originalButtonHtml = generateBtn ? generateBtn.innerHTML : '';
+          const originalButtonMobileHtml = generateBtnMobile ? generateBtnMobile.innerHTML : '';
+           const outputSection = document.getElementById('outputSection-t5');
+           const ta = document.getElementById('finalPrompt-t5');
+
+          const setLoading = (isLoading) => {
+              const loadingHtml = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Membuat Timeline...`;
+              if (isLoading) {
+                  if(generateBtn) { generateBtn.disabled = true; generateBtn.innerHTML = loadingHtml; }
+                  if(generateBtnMobile) { generateBtnMobile.disabled = true; generateBtnMobile.innerHTML = loadingHtml; }
+                   if (ta) ta.value = ''; // Clear previous output
+                   if (outputSection) outputSection.classList.add('hidden'); // Hide output section during loading
+
+              } else {
+                  if(generateBtn) { generateBtn.disabled = false; generateBtn.innerHTML = originalButtonHtml; }
+                  if(generateBtnMobile) { generateBtnMobile.disabled = false; generateBtnMobile.innerHTML = originalButtonMobileHtml; }
+              }
+          };
+          
+          setLoading(true);
+
+          try {
+              const ambil = id => document.getElementById(id)?.value || '';
+              const safe = (v, alt) => v?.trim() || alt;
+
+              const userInput = {
+                  dialogue: safe(ambil('dialog-t5'), 'no dialogue provided'),
+                  lang: (ambil('bahasaDialog-t5') === 'Bahasa Indonesia') ? 'Indonesia' : 'en',
+                  emotion: ambil('emotion-t5'),
+                  character_description: safe(ambil('deskripsiKarakter-t5'), 'not specified'),
+                  scene_focus: ambil('sceneFocus-t5'),
+                  max_actions: parseInt(ambil('maxActions-t5'), 10) || 8
+              };
+
+              // Basic validation
+              if (!userInput.dialogue || userInput.dialogue === 'no dialogue provided') {
+                  throw new Error("Dialog tidak boleh kosong.");
+              }
+
+
+              const motionTimelineResult = await callMotionDirectorAPI(userInput);
+
+              if (typeof motionTimelineResult === 'object' && motionTimelineResult !== null) {
+                   // Add metadata back if needed (or ensure API returns it)
+                  motionTimelineResult.metadata = motionTimelineResult.metadata || {}; // Ensure metadata object exists
+                  motionTimelineResult.metadata.dialogue_language = userInput.lang;
+                  motionTimelineResult.metadata.dialogue_original_text = userInput.dialogue;
+                  
+                  if (ta) ta.value = JSON.stringify(motionTimelineResult, null, 2);
+                  if (outputSection) outputSection.classList.remove('hidden');
+                  // Optional: Scroll after a tiny delay to ensure rendering
+                   setTimeout(() => {
+                        outputSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                   }, 100);
+
+              } else {
+                   // Handle cases where API returned an error string
+                   if (ta) ta.value = "Gagal menghasilkan timeline. Respon dari model:\n\n" + motionTimelineResult;
+                   if (outputSection) outputSection.classList.remove('hidden'); // Show output section to display the error
+              }
+
+          } catch (error) {
+              console.error("Error in generateOutput:", error);
+               if (ta) ta.value = `Terjadi kesalahan: ${error.message || "Silakan cek konsol browser."}`;
+               if (outputSection) outputSection.classList.remove('hidden'); // Show error in output section
+          } finally {
+              setLoading(false);
+          }
+        }
+
+        document.getElementById('generateBtn-t5')?.addEventListener('click', generateOutput);
+        document.getElementById('generateBtnMobile-t5')?.addEventListener('click', generateOutput);
+
+        document.getElementById('copyBtn-t5')?.addEventListener('click', () => { // Added null check
+          const t = document.getElementById('finalPrompt-t5');
+          const fb = document.getElementById('copy-feedback-t5');
+          if (!t || !fb) return; // Exit if elements not found
+
+          t.select();
+          t.setSelectionRange(0, 99999); // For mobile devices
+
+          try {
+             // Use Clipboard API first
+             navigator.clipboard.writeText(t.value).then(() => {
+                 fb.textContent = 'Timeline berhasil disalin!';
+                 fb.classList.remove('hidden');
+                 setTimeout(() => { fb.classList.add('hidden'); }, 2000);
+             }).catch(err => {
+                 console.warn('Clipboard API failed, falling back to execCommand:', err);
+                 // Fallback to execCommand
+                 const successful = document.execCommand('copy');
+                 if (successful) {
+                     fb.textContent = 'Timeline berhasil disalin! (fallback)';
+                     fb.classList.remove('hidden');
+                     setTimeout(() => { fb.classList.add('hidden'); }, 2000);
+                 } else {
+                      throw new Error('execCommand copy failed');
+                 }
+             });
+          } catch (err) {
+            console.error('Copying failed:', err);
+             fb.textContent = 'Gagal menyalin! Coba salin manual.';
+             fb.classList.remove('hidden');
+             fb.style.color = 'red'; // Indicate error
+             setTimeout(() => { 
+                 fb.classList.add('hidden'); 
+                 fb.style.color = ''; // Reset color
+             }, 3000);
+          }
+           // Deselect text
+           window.getSelection()?.removeAllRanges(); // Use optional chaining
+        });
+
+        document.querySelectorAll('[data-accordion-trigger-t5]').forEach(trigger => {
+          const panelId = trigger.getAttribute('aria-controls');
+          const panel = document.getElementById(panelId);
+          const icon = trigger.querySelector('svg');
+           if (!panel || !icon) return; // Skip if elements missing
+
+          const updateAccordionState = () => {
+               // Always open on desktop (md breakpoint and up)
+              if (window.innerWidth >= 768) { 
+                  trigger.setAttribute('aria-expanded', 'true');
+                  panel.setAttribute('data-state', 'open');
+                  panel.classList.add('grid');
+                  panel.classList.remove('hidden');
+                  icon.classList.remove('rotate-180');
+              } else {
+                   // On mobile, default to first open, others closed
+                   const isFirst = panelId === 'accordion-panel-1-t5';
+                   const shouldBeOpen = trigger.getAttribute('aria-expanded') === 'true'; // Check current state first
+
+                   // If it's not the first panel AND it wasn't explicitly opened, close it.
+                   if (!isFirst && !shouldBeOpen) {
+                       trigger.setAttribute('aria-expanded', 'false');
+                       panel.setAttribute('data-state', 'closed');
+                       panel.classList.remove('grid');
+                       panel.classList.add('hidden');
+                       icon.classList.add('rotate-180');
+                   } else { // First panel or already open
+                       trigger.setAttribute('aria-expanded', 'true');
+                       panel.setAttribute('data-state', 'open');
+                       panel.classList.add('grid');
+                       panel.classList.remove('hidden');
+                       icon.classList.remove('rotate-180');
+                   }
+              }
+          };
+
+          trigger.addEventListener('click', () => {
+              // Only toggle on mobile
+              if (window.innerWidth < 768) { 
+                  const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+                  trigger.setAttribute('aria-expanded', String(!isOpen));
+                  panel.setAttribute('data-state', isOpen ? 'closed' : 'open');
+                  panel.classList.toggle('hidden');
+                  panel.classList.toggle('grid'); // Use grid for layout when open
+                  icon.classList.toggle('rotate-180');
+              }
+          });
+          
+          window.addEventListener('resize', updateAccordionState);
+          // Initial setup based on current size and state
+          // Run on load: Check if mobile and set initial state
+          if (window.innerWidth < 768) {
+               const isFirst = panelId === 'accordion-panel-1-t5';
+               trigger.setAttribute('aria-expanded', String(isFirst));
+               panel.setAttribute('data-state', isFirst ? 'open' : 'closed');
+               panel.classList.toggle('grid', isFirst);
+               panel.classList.toggle('hidden', !isFirst);
+               icon.classList.toggle('rotate-180', !isFirst); // Rotate if closed
+          } else {
+             updateAccordionState(); // Ensure desktop starts open
+          }
+        });
+    }
+
+    /* ==================== TOOL 2 (PAGE 4) ==================== */
+    function initTool2() {
+      const imageUpload = document.getElementById('imageUpload-t2');
+      const imagePreview = document.getElementById('imagePreview-t2');
+      const placeholderText = document.getElementById('placeholderText-t2');
+      const analyzeBtn = document.getElementById('analyzeBtn-t2');
+      const loader = document.getElementById('loader-t2');
+      const resultsContent = document.getElementById('resultsContent-t2');
+      let imageBase64 = null;
+
+      const toBase64 = file => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+
+      if(imageUpload) {
+        imageUpload.addEventListener('change', async (event) => {
+            const file = event.target.files?.[0]; // Use optional chaining
+            if (file) {
+                 // Basic file type validation
+                 if (!file.type.startsWith('image/')) {
+                     alert("Silakan pilih file gambar (JPG, PNG, WEBP, dll).");
+                     imageUpload.value = ''; // Reset input
+                     return;
+                 }
+                try {
+                    imageBase64 = await toBase64(file);
+                    if(imagePreview) imagePreview.src = imageBase64;
+                    if(imagePreview) imagePreview.classList.remove('hidden');
+                    if(placeholderText) placeholderText.classList.add('hidden');
+                    if(analyzeBtn) analyzeBtn.disabled = false;
+                    if(resultsContent) resultsContent.innerHTML = '<p class="italic text-gray-400 dark:text-gray-500">Hasil analisis akan muncul di sini.</p>';
+                } catch (error) {
+                     console.error("Gagal membaca file:", error);
+                     alert("Gagal memproses file gambar.");
+                     imageBase64 = null;
+                     if(analyzeBtn) analyzeBtn.disabled = true;
+                }
+            } else {
+                 // Handle case where user cancels file selection
+                 imageBase64 = null;
+                 if(imagePreview) imagePreview.classList.add('hidden');
+                 if(placeholderText) placeholderText.classList.remove('hidden');
+                 if(analyzeBtn) analyzeBtn.disabled = true;
+            }
+        });
+      }
+
+      if(analyzeBtn) {
+        analyzeBtn.addEventListener('click', async () => {
+            if (!imageBase64 || !imageBase64.includes(',')) { // Added check for valid base64 format
+                alert("Silakan unggah gambar yang valid terlebih dahulu.");
+                return;
+            }
+
+
+            if(resultsContent) resultsContent.innerHTML = '';
+            if(loader) loader.classList.remove('hidden');
+            if(analyzeBtn) analyzeBtn.disabled = true;
+
+            try {
+            const prompt = `Anda adalah seorang ahli anatomi dan koreografi. Lakukan analisis pose manusia dari gambar ini. Jelaskan secara detail:
+
+- **Deskripsi Pose Umum:** Jelaskan posisi tubuh secara keseluruhan.
+- **Detail Anatomi & Sendi:** Uraikan posisi kepala, bahu, sudut siku, posisi tangan, pinggul, dan kaki.
+Sajikan hasilnya dalam format yang jelas dan terstruktur dengan poin-poin di atas sebagai judul. Gunakan format markdown bold (**Judul**) untuk setiap judul bagian. jangan berikan detail pakaian/celana/sepatu, fokus saja analisa pose pada gambar referensi. ketika memberikan hasil analisa awali dengan kata:Pose model 1:.... Pose model 2 (jika ada)....`;
+
+            const payload = {
+                contents: [{
+                parts: [
+                    { text: prompt },
+                    { inlineData: { mimeType: 'image/png', data: imageBase64.split(',')[1] } }
+                ]
+                }]
+            };
+
+            const resultText = await window.callApi(payload, true);
+
+            // Basic Markdown to HTML conversion (more robust parsing might be needed for complex markdown)
+            let formattedResult = resultText
+                .replace(/\*\*(.*?)\*\*/g, '<h3 class="text-[1.05rem] font-semibold text-[var(--text)] my-2">$1</h3>') // Bold to h3
+                .replace(/^- (.*)/gm, '<li class="ml-4 my-1">$1</li>') // Basic list item
+                .replace(/\n/g, '<br>'); // Newlines to <br>
+
+             // Wrap list items in <ul> if needed (simple check)
+             if (formattedResult.includes('<li')) {
+                 formattedResult = `<ul>${formattedResult.replace(/<br>/g, '')}</ul>`; // Remove extra <br> inside list
+             } else {
+                  formattedResult = formattedResult.replace(/<br>/g, '<p class="my-1.5"></p>'); // Keep paragraph breaks if no list
+             }
+
+
+            if(resultsContent) resultsContent.innerHTML = formattedResult;
+
+            } catch (error) {
+            console.error("Error analyzing pose:", error); // Log the full error
+            let errorMsg = `Gagal menganalisis pose.`;
+             if (error.message.includes("API error 429")) {
+                 errorMsg = "Terlalu banyak permintaan ke AI. Coba lagi nanti.";
+             } else if (error.message.includes("Ditolak:")) {
+                 errorMsg = `Analisis gambar ditolak: ${error.message.split('Ditolak:')[1]?.trim() || 'Alasan tidak diketahui'}`;
+             } else if (error.message) {
+                 errorMsg += ` Detail: ${error.message}`;
+             }
+            if(resultsContent) resultsContent.innerHTML = `<p class="text-red-600">${errorMsg}</p>`;
+            } finally {
+            if(loader) loader.classList.add('hidden');
+            if(analyzeBtn) analyzeBtn.disabled = false;
+            }
+        });
+      }
+    }
+    
+    /* ==================== TOOL 1 (PAGE 5) ==================== */
+    function initTool1() {
+      const fileUpload = document.getElementById('file-upload-t1');
+      const uploadContainer = document.getElementById('image-upload-container-t1');
+      const previewContainer = document.getElementById('image-preview-container-t1');
+      const imagePreview = document.getElementById('image-preview-t1');
+      const changeImageBtn = document.getElementById('change-image-btn-t1');
+      const analyzeBtn = document.getElementById('analyze-btn-t1');
+      const copyBtn = document.getElementById('copy-btn-t1');
+      const uploadLabel = document.querySelector('label[for="file-upload-t1"]');
+      const placeholder = document.getElementById('placeholder-t1');
+      const loading = document.getElementById('loading-t1');
+      const analysisOutput = document.getElementById('analysis-output-t1');
+      let imageBase64 = null;
+
+      const toBase64 = file => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+
+      async function handleFile(file) {
+        if (file && file.type.startsWith('image/')) {
+             // Size Check (e.g., 4MB limit)
+             const maxSizeMB = 4;
+             if (file.size > maxSizeMB * 1024 * 1024) {
+                 alert(`Ukuran file melebihi batas ${maxSizeMB}MB.`);
+                 if (fileUpload) fileUpload.value = ''; // Reset input
+                 return;
+             }
+
+          try {
+              imageBase64 = await toBase64(file);
+              if (imagePreview) imagePreview.src = imageBase64;
+              if (uploadContainer) uploadContainer.classList.add('hidden');
+              if (previewContainer) previewContainer.classList.remove('hidden');
+              if (analyzeBtn) analyzeBtn.disabled = false;
+              if (analysisOutput) analysisOutput.innerHTML = ''; // Clear previous results
+              if (placeholder) placeholder.classList.remove('hidden'); // Show placeholder initially
+              if (loading) loading.classList.add('hidden'); // Ensure loading is hidden
+              if (copyBtn) copyBtn.classList.add('hidden'); // Hide copy btn initially
+          } catch (error) {
+              console.error("Gagal membaca file:", error);
+              alert("Gagal memproses file gambar.");
+              imageBase64 = null;
+              if (analyzeBtn) analyzeBtn.disabled = true;
+          }
+        } else if (file) {
+             alert("Tipe file tidak didukung. Harap unggah gambar (PNG, JPG, WEBP).");
+             if (fileUpload) fileUpload.value = ''; // Reset input
+        }
+      }
+
+      if (fileUpload) {
+        fileUpload.addEventListener('change', (e) => handleFile(e.target.files?.[0])); // Use optional chaining
+      }
+      
+      if (changeImageBtn) {
+        changeImageBtn.addEventListener('click', () => {
+          imageBase64 = null; // Clear base64 data
+          if (fileUpload) fileUpload.value = '';
+          if (uploadContainer) uploadContainer.classList.remove('hidden');
+          if (previewContainer) previewContainer.classList.add('hidden');
+          if (analyzeBtn) analyzeBtn.disabled = true;
+          if (copyBtn) copyBtn.classList.add('hidden');
+          if (analysisOutput) analysisOutput.innerHTML = '';
+          if (placeholder) placeholder.classList.remove('hidden');
+          if (loading) loading.classList.add('hidden');
+          // Optionally trigger file input again
+          // if (fileUpload) fileUpload.click(); 
+        });
+      }
+
+      if (uploadLabel) {
+        uploadLabel.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          uploadLabel.classList.add('dragover');
+        });
+        uploadLabel.addEventListener('dragleave', () => uploadLabel.classList.remove('dragover'));
+        uploadLabel.addEventListener('drop', (e) => {
+          e.preventDefault();
+          uploadLabel.classList.remove('dragover');
+          const file = e.dataTransfer?.files?.[0]; // Use optional chaining
+          if (file) {
+            // if (fileUpload) fileUpload.files = e.dataTransfer.files; // Assigning FileList might not work consistently, handle file directly
+            handleFile(file);
+          }
+        });
+      }
+      
+      if (analyzeBtn) {
+        analyzeBtn.addEventListener('click', async () => {
+           if (!imageBase64 || !imageBase64.includes(',')) { // Check for valid base64
+                alert("Silakan unggah gambar yang valid terlebih dahulu.");
+                return;
+           }
+
+
+          if (placeholder) placeholder.classList.add('hidden');
+          if (analysisOutput) analysisOutput.innerHTML = '';
+          if (loading) loading.classList.remove('hidden');
+          if (copyBtn) copyBtn.classList.add('hidden');
+          analyzeBtn.disabled = true;
+
+          try {
+            const prompt = `Anda adalah seorang ahli desain interior dan fotografi. Analisis gambar ini secara mendalam. Berikan deskripsi detail tentang:
+
+- **Latar Belakang & Suasana:** Jelaskan gaya ruangan (misal: modern, industrial, rustic), palet warna, dan suasana yang tercipta.
+- **Properti & Dekorasi:** Identifikasi objek-objek utama dan pendukung, serta bagaimana penataannya.
+- **Pencahayaan:** Analisis sumber cahaya (alami/buatan), arahnya, dan efek yang dihasilkan pada foto.
+
+Sajikan hasilnya dalam format yang jelas to the point dan terstruktur dengan poin-poin di atas sebagai judul. Gunakan format markdown bold (**Judul**) untuk setiap judul bagian. Jangan berikan informasi tentang pakaian/celana/kerudung/sepatu yang digunakan oleh objek. Berikan informasi to the point, jangan berikan kata-kata pembuka terlebih dahulu. Buat dalam 2 jenis: 1 ringkas tapi lengkap, dan 1 versi sangat detail. Pisahkan kedua versi dengan jelas, misalnya dengan judul "**Versi Ringkas**" dan "**Versi Detail**".`;
+
+
+            const payload = {
+              contents: [{
+                parts: [
+                  { text: prompt },
+                  { inlineData: { mimeType: 'image/png', data: imageBase64.split(',')[1] } }
+                ]
+              }]
+            };
+
+            const resultText = await window.callApi(payload, true);
+
+            // Improved Markdown to HTML
+            let formattedResult = resultText
+                // Headers (Bold lines)
+                .replace(/^\*\*(.*?)\*\*/gm, '<h4 class="font-semibold text-base mb-1.5 mt-3 text-[var(--text)]">$1</h4>') 
+                 // Basic List Items
+                 .replace(/^- (.*)/gm, '<li class="ml-5 list-disc my-1">$1</li>')
+                 // Replace consecutive <br> potentially caused by list conversion with single paragraph breaks between list groups
+                 .replace(/(<\/li>)(\s*<br\s*\/?>\s*)+/g, '$1</p><p class="my-1.5">') 
+                 // General newlines to paragraph breaks (adjust spacing)
+                 .replace(/\n\n+/g, '</p><p class="my-1.5">') // Double newline -> paragraph
+                 .replace(/\n/g, '<br>'); // Single newline -> line break
+
+             // Wrap list items if detected
+             if (formattedResult.includes('<li')) {
+                  // Wrap contiguous li elements in ul
+                  formattedResult = formattedResult.replace(/(<li[\s\S]*?<\/li>)+/g, '<ul>$1</ul>');
+                   // Clean up potentially misplaced paragraph tags around lists
+                   formattedResult = formattedResult.replace(/<p class="my-1.5">\s*<ul>/g, '<ul>');
+                   formattedResult = formattedResult.replace(/<\/ul>\s*<\/p>/g, '</ul>');
+             }
+             
+             // Ensure it starts/ends with appropriate tags if needed (basic check)
+             if (!formattedResult.startsWith('<h4') && !formattedResult.startsWith('<p') && !formattedResult.startsWith('<ul')) {
+                  formattedResult = `<p class="my-1.5">${formattedResult}`;
+             }
+              if (!formattedResult.endsWith('</h4>') && !formattedResult.endsWith('</p>') && !formattedResult.endsWith('</ul>')) {
+                   formattedResult += `</p>`; // Assume ending with paragraph if not header/list
+              }
+             // Remove empty paragraphs that might result from replacements
+              formattedResult = formattedResult.replace(/<p class="my-1.5">\s*<\/p>/g, '');
+
+
+            if (analysisOutput) analysisOutput.innerHTML = `<div class="prose prose-sm max-w-none dark:prose-invert prose-p:text-[var(--text)] prose-li:text-[var(--text)]">${formattedResult}</div>`; // Added dark mode support
+            if (copyBtn) copyBtn.classList.remove('hidden');
+
+          } catch (error) {
+             console.error("Error analyzing background:", error); // Log full error
+             let errorMsg = `Maaf, terjadi kesalahan saat menganalisis.`;
+             if (error.message.includes("API error 429")) {
+                 errorMsg = "Terlalu banyak permintaan ke AI. Coba lagi nanti.";
+             } else if (error.message.includes("Ditolak:")) {
+                 errorMsg = `Analisis gambar ditolak: ${error.message.split('Ditolak:')[1]?.trim() || 'Alasan tidak diketahui'}`;
+             } else if (error.message) {
+                 errorMsg += ` Detail: ${error.message}`;
+             }
+            if (analysisOutput) analysisOutput.innerHTML = `<p class="text-red-600 font-medium">${errorMsg}</p>`;
+          } finally {
+            if (loading) loading.classList.add('hidden');
+            if (analyzeBtn) analyzeBtn.disabled = false;
+          }
+        });
+      }
+
+      if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+          if (!analysisOutput) return;
+          // Get innerText for cleaner copy without HTML tags
+          const textToCopy = analysisOutput.innerText || analysisOutput.textContent || ''; // Fallback to textContent
+          if (!textToCopy.trim()) return; // Don't copy if empty
+
+           // Use Clipboard API with fallback
+           if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+                    const original = copyBtn.textContent;
+                    copyBtn.textContent = 'Tersalin!';
+                    copyBtn.disabled = true;
+                    setTimeout(() => { 
+                        copyBtn.textContent = original; 
+                        copyBtn.disabled = false;
+                    }, 1500);
+                }).catch(err => {
+                    console.warn('Clipboard API failed, fallback:', err);
+                    copyUsingExecCommandT1(textToCopy.trim(), copyBtn); // Use specific fallback
+                });
+           } else {
+               copyUsingExecCommandT1(textToCopy.trim(), copyBtn); // Use specific fallback
+           }
+        });
+      }
+
+       // Specific fallback for Tool 1 copy
+       function copyUsingExecCommandT1(text, button) {
+           const textArea = document.createElement("textarea");
+           textArea.value = text;
+           textArea.style.position = "fixed"; textArea.style.left = "-9999px";
+           document.body.appendChild(textArea);
+           textArea.focus(); textArea.select();
+           try {
+               const successful = document.execCommand('copy');
+               if (successful) {
+                   const original = button.textContent;
+                   button.textContent = 'Tersalin!';
+                   button.disabled = true;
+                   setTimeout(() => { button.textContent = original; button.disabled = false; }, 1500);
+               } else { throw new Error('execCommand failed'); }
+           } catch (err) {
+               console.error('Fallback execCommand copy failed (T1): ', err);
+               alert('Gagal menyalin. Salin manual.');
+           }
+           document.body.removeChild(textArea);
+       }
+    }
+   </script>
+   <script>
+     // toggle handler
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('theme-toggle');
+      const label = document.getElementById('theme-label');
+      const setLabel = () => {
+        if (!label) return;
+        const dark = document.documentElement.classList.contains('dark');
+        label.textContent = dark ? 'Switch ke Light' : 'Switch ke Dark';
+      };
+      setLabel(); // Set initial label
+  
+      btn?.addEventListener('click', () => { // Use optional chaining
+        document.documentElement.classList.toggle('dark');
+        const dark = document.documentElement.classList.contains('dark');
+        // Use try-catch for localStorage in case of security restrictions
+        try {
+            localStorage.setItem('theme', dark ? 'dark' : 'light');
+        } catch (e) {
+            console.warn("Could not save theme to localStorage:", e);
+        }
+        setLabel();
+      });
+    });
+  </script>
+
+<script>
+// ----------------- Persistent storage (localStorage) -----------------
+// Save tracker periodically and on unload so pose usage persists across reloads
+(function enablePoseTrackerPersistence(){
+  const STORAGE_KEY = 'gcu_pose_tracker_v1';
+
+  function saveTracker() {
+    // Check if window.usedPosesTracker and its properties exist
+    if (!window.usedPosesTracker || !window.usedPosesTracker.single || !window.usedPosesTracker.couple) return; 
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        single: Array.from(window.usedPosesTracker.single), // No || [] needed after check
+        couple: Array.from(window.usedPosesTracker.couple)  // No || [] needed after check
+      }));
+    } catch (e) {
+      // console.warn('Could not save pose tracker', e);
+    }
+  }
+
+  function loadTracker() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+       // Ensure window.usedPosesTracker exists before assigning
+      if (!window.usedPosesTracker) {
+        window.usedPosesTracker = { single: new Set(), couple: new Set() };
+      }
+       // Ensure parsed properties are arrays before creating Sets
+      window.usedPosesTracker.single = new Set(Array.isArray(parsed.single) ? parsed.single : []);
+      window.usedPosesTracker.couple = new Set(Array.isArray(parsed.couple) ? parsed.couple : []);
+    } catch (e) {
+       console.error("Error loading pose tracker from storage:", e);
+       // Reset tracker if loading fails
+       window.usedPosesTracker = { single: new Set(), couple: new Set() };
+    }
+  }
+
+  // load on start
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', loadTracker, { once: true }); // Use once option
+  } else {
+    loadTracker();
+  }
+
+  // save every 5 seconds (in case app runs long) and on unload
+   // Consider using visibilitychange for more reliable saving on mobile/tab close
+   let saveInterval = setInterval(saveTracker, 5000);
+   document.addEventListener('visibilitychange', () => {
+       if (document.visibilityState === 'hidden') {
+           saveTracker(); // Save when tab becomes hidden
+           clearInterval(saveInterval); // Clear interval when hidden
+       } else {
+            clearInterval(saveInterval); // Clear just in case
+            saveInterval = setInterval(saveTracker, 5000); // Restart interval when visible
+       }
+   });
+   // Keep beforeunload as a fallback
+  window.addEventListener('beforeunload', saveTracker);
+})();
+
+</script>
+
+<!-- ========================================================== -->
+<!-- ============= REMOVED REDUNDANT TOKEN SCRIPT ============= -->
+<!-- ========================================================== -->
+
+</body>
+</html>
+
