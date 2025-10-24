@@ -13,8 +13,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const tokensMessage = document.getElementById('tokens-message');
     const themeToggle = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
+    const logoutButton = document.getElementById('logout-button');
 
     let adminToken = null; // Store the base64 encoded admin credentials
+
+    // Function to automatically login if credentials exist in localStorage
+    async function autoLogin() {
+        const savedCredentials = localStorage.getItem('adminCredentials');
+        if (savedCredentials) {
+            // Check if credentials are still valid by attempting to fetch tokens
+            try {
+                const response = await fetch('/tokens/', {
+                    headers: {
+                        'Authorization': `Basic ${savedCredentials}`
+                    }
+                });
+
+                if (response.ok) {
+                    // Credentials are valid, set the adminToken and show admin section
+                    adminToken = savedCredentials;
+                    authSection.classList.add('hidden');
+                    adminSection.classList.remove('hidden');
+                    adminSection.classList.add('slide-in');
+                    fetchTokens(); // Load tokens after automatic login
+                    return true;
+                } else {
+                    // Credentials are invalid, remove them from localStorage
+                    localStorage.removeItem('adminCredentials');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error during auto-login check:', error);
+                return false;
+            }
+        }
+        return false;
+    }
+
+    // Function to logout and clear credentials from localStorage
+    function logout() {
+        localStorage.removeItem('adminCredentials');
+        adminToken = null;
+        authSection.classList.remove('hidden');
+        adminSection.classList.add('hidden');
+        showMessage(authMessage, 'Logged out successfully.', 'success');
+    }
 
     // Theme toggle functionality
     function initTheme() {
@@ -43,6 +86,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize theme on page load
     initTheme();
+
+    // Check for saved credentials and attempt auto-login
+    autoLogin();
+
+    // Logout button event listener
+    logoutButton.addEventListener('click', () => {
+        logout();
+    });
 
     // Helper to display messages
     function showMessage(element, message, type) {
@@ -77,6 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     adminSection.classList.add('hidden');
                     authSection.classList.remove('hidden');
                     adminToken = null;
+                    // Remove invalid credentials from localStorage
+                    localStorage.removeItem('adminCredentials');
                     return;
                 }
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -246,6 +299,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 adminToken = credentials;
+                // Save credentials to localStorage for auto-login
+                localStorage.setItem('adminCredentials', credentials);
                 authSection.classList.add('hidden');
                 adminSection.classList.remove('hidden');
                 adminSection.classList.add('slide-in');
@@ -254,10 +309,14 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 const errorData = await response.json();
                 showMessage(authMessage, errorData.detail || 'Login failed.', 'error');
+                // Remove invalid credentials from localStorage if login fails
+                localStorage.removeItem('adminCredentials');
             }
         } catch (error) {
             console.error('Login error:', error);
             showMessage(authMessage, 'An error occurred during login.', 'error');
+            // Remove invalid credentials from localStorage if login fails
+            localStorage.removeItem('adminCredentials');
         } finally {
             // Restore button state
             loginButton.disabled = false;
