@@ -8,6 +8,7 @@ from passlib.context import CryptContext
 from dotenv import load_dotenv
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from database import SessionLocal, engine, get_db
 from models import Base, Token, Admin
@@ -20,6 +21,13 @@ load_dotenv()
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],  # semua origin diizinkan saat dev
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+)
 
 # Mount static files for frontend
 app.mount("/static", StaticFiles(directory="static"), name="static")
