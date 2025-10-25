@@ -307,14 +307,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 showMessage(authMessage, 'Login successful!', 'success');
                 fetchTokens(); // Load tokens after successful login
             } else {
-                const errorData = await response.json();
-                showMessage(authMessage, errorData.detail || 'Login failed.', 'error');
+                // Tidak menampilkan pesan error saat login gagal
+                // const errorData = await response.json();
+                // showMessage(authMessage, errorData.detail || 'Login failed.', 'error');
                 // Remove invalid credentials from localStorage if login fails
                 localStorage.removeItem('adminCredentials');
             }
         } catch (error) {
             console.error('Login error:', error);
-            showMessage(authMessage, 'An error occurred during login.', 'error');
+            // Tidak menampilkan pesan error saat terjadi kesalahan
+            // showMessage(authMessage, 'An error occurred during login.', 'error');
             // Remove invalid credentials from localStorage if login fails
             localStorage.removeItem('adminCredentials');
         } finally {
